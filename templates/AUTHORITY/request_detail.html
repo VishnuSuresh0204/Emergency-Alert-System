@@ -1,0 +1,109 @@
+{% extends 'AUTHORITY/commen.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-white">
+                <h4 class="mb-0">Application Details: {{ cert_request.application_number }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">Certificate Type</div>
+                    <div class="col-sm-8 fw-bold">{{ cert_request.certificate_type.name }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">Applicant Name</div>
+                    <div class="col-sm-8">{{ cert_request.applicant_name }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">Father's Name</div>
+                    <div class="col-sm-8">{{ cert_request.applicant_father_name }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">Date of Birth</div>
+                    <div class="col-sm-8">{{ cert_request.applicant_dob }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">Address</div>
+                    <div class="col-sm-8">{{ cert_request.applicant_address }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">Additional Details</div>
+                    <div class="col-sm-8">{{ cert_request.additional_details }}</div>
+                </div>
+
+                <hr>
+
+                <h5>Supporting Documents</h5>
+                <div class="row mt-3">
+                    {% if cert_request.document1 %}
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ cert_request.document1.url }}" target="_blank"
+                            class="btn btn-sm btn-outline-secondary w-100">
+                            <i class="fas fa-file-alt me-2"></i> Document 1
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% if cert_request.document2 %}
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ cert_request.document2.url }}" target="_blank"
+                            class="btn btn-sm btn-outline-secondary w-100">
+                            <i class="fas fa-file-alt me-2"></i> Document 2
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% if cert_request.document3 %}
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ cert_request.document3.url }}" target="_blank"
+                            class="btn btn-sm btn-outline-secondary w-100">
+                            <i class="fas fa-file-alt me-2"></i> Document 3
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Process Application</h5>
+            </div>
+            <div class="card-body">
+                <p>Current Status:
+                    <span class="badge bg-secondary">{{ cert_request.status }}</span>
+                </p>
+
+                {% if cert_request.status == 'Approved' %}
+                <div class="alert alert-success">Application Approved</div>
+                <a href="/authority_issue_certificate/?id={{ cert_request.id }}" class="btn btn-success w-100">
+                    <i class="fas fa-stamp me-2"></i> Issue Certificate
+                </a>
+                {% elif cert_request.status == 'Rejected' %}
+                <div class="alert alert-danger">Application Rejected</div>
+                {% else %}
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Review Remarks</label>
+                        <textarea name="remarks" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" name="action" value="review" class="btn btn-warning">
+                            Mark Under Review
+                        </button>
+                        <button type="submit" name="action" value="approve" class="btn btn-success">
+                            Approve Application
+                        </button>
+                        <button type="submit" name="action" value="reject" class="btn btn-danger">
+                            Reject Application
+                        </button>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

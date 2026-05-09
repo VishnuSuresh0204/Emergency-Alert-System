@@ -1,0 +1,60 @@
+{% extends 'CUSTOMER/commen.html' %}
+{% block content %}
+
+<div class="mb-4">
+    <h2 class="fw-bold text-success">News & Announcements</h2>
+    <p class="text-muted">
+        Stay updated with the latest happenings at Digital Gramapanchayath.
+    </p>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 g-4">
+
+{% for news in news_items %}
+    <div class="col">
+        <div class="card h-100 border-0 shadow-sm">
+
+            {% if news.image %}
+                <img src="{{ news.image.url }}"
+                     class="card-img-top"
+                     style="height: 220px; object-fit: cover;">
+            {% else %}
+                <div class="bg-light d-flex align-items-center justify-content-center"
+                     style="height: 220px;">
+                    <i class="fas fa-image fa-3x text-muted"></i>
+                </div>
+            {% endif %}
+
+            <div class="card-body">
+                <h5 class="card-title fw-bold text-success">
+                    {{ news.title }}
+                </h5>
+
+                <p class="card-text text-muted">
+                    {{ news.content|truncatewords:40 }}
+                </p>
+            </div>
+
+            <div class="card-footer bg-white border-top-0 pb-3">
+                <small class="text-muted">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    Posted on {{ news.date_posted|date:"d M Y" }}
+                </small>
+            </div>
+
+        </div>
+    </div>
+
+{% empty %}
+    <div class="col-12 text-center py-5">
+        <div class="bg-white p-5 rounded-4 shadow-sm">
+            <i class="fas fa-newspaper fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">No news updates available right now</h5>
+            <p>Please check back later for announcements.</p>
+        </div>
+    </div>
+{% endfor %}
+
+</div>
+
+{% endblock %}

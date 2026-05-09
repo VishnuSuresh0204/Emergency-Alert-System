@@ -1,0 +1,54 @@
+{% extends 'ADMIN/commen.html' %}
+{% block content %}
+<div class="mb-4">
+    <h2 class="page-title">Add Government Scheme</h2>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Scheme Name</label>
+                        <input type="text" name="name" class="form-control" placeholder="e.g., Housing Subsidy Scheme"
+                            required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Description</label>
+                        <textarea name="description" class="form-control" rows="4"
+                            placeholder="Briefly describe the scheme goals..." required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Eligibility Criteria</label>
+                        <textarea name="eligibility" class="form-control" rows="3"
+                            placeholder="Who can apply? (e.g., BPL families, Farmers)" required></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Benefits</label>
+                        <textarea name="benefits" class="form-control" rows="3"
+                            placeholder="What are the advantages of this scheme?" required></textarea>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Application Start Date</label>
+                            <input type="date" name="start_date" class="form-control">
+                            <small class="text-muted">Optional: When citizens can start applying.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Application End Date</label>
+                            <input type="date" name="end_date" class="form-control">
+                            <small class="text-muted">Optional: Final date for applications.</small>
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="/admin_manage_schemes/" class="btn btn-light px-4">Cancel</a>
+                        <button type="submit" class="btn btn-gp px-5">Launch Scheme</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

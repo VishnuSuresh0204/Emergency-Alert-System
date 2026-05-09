@@ -1,0 +1,59 @@
+{% extends 'AUTHORITY/commen.html' %}
+{% block content %}
+<div class="card">
+    <div class="card-header bg-white">
+        <h4 class="mb-0">Assigned Requests</h4>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Req ID</th>
+                        <th>Applicant Details</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Forwarded On</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in requests %}
+                    <tr>
+                        <td>{{ req.application_number }}</td>
+                        <td>
+                            <b>{{ req.applicant_name }}</b>
+                            <br><small>S/O {{ req.applicant_father_name }}</small>
+                        </td>
+                        <td>{{ req.certificate_type.name }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if req.status == 'Forwarded' %}bg-warning text-dark
+                                {% elif req.status == 'Issued' %}bg-success
+                                {% elif req.status == 'Rejected' %}bg-danger
+                                {% else %}bg-info{% endif %}">
+                                {{ req.status }}
+                            </span>
+                        </td>
+                        <td>{{ req.forwarded_date|date:"M d, Y" }}</td>
+                        <td>
+                            {% if req.status == 'Issued' %}
+                            <a href="/authority_issued_certificates/"
+                                class="btn btn-sm btn-secondary disabled">Completed</a>
+                            {% else %}
+                            <a href="/authority_request_detail/?id={{ req.id }}"
+                                class="btn btn-sm btn-primary">Process</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center p-4">No requests assigned yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends 'ADMIN/commen.html' %}
+{% block content %}
+<div class="mb-4">
+    <h2 class="page-title">Edit News & Announcement</h2>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">News Title</label>
+                        <input type="text" name="title" class="form-control" value="{{ news.title }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Content</label>
+                        <textarea name="content" class="form-control" rows="6" required>{{ news.content }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Update Image</label>
+                        {% if news.image %}
+                        <div class="mb-2">
+                            <img src="{{ news.image.url }}" class="rounded shadow-sm"
+                                style="height: 100px; object-fit: cover;">
+                            <small class="text-muted d-block">Current Image</small>
+                        </div>
+                        {% endif %}
+                        <input type="file" name="image" class="form-control">
+                        <small class="text-muted">Leave empty to keep current image</small>
+                    </div>
+
+                    <div class="mb-4 d-flex align-items-center">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="is_active" id="isActive" {{
+                                is_active_checked }}>
+                            <label class="form-check-label fw-bold ms-2" for="isActive">Published / Visible to
+                                Public</label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="/admin_view_news/" class="btn btn-light px-4">Cancel</a>
+                        <button type="submit" class="btn btn-gp px-5">Update News</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

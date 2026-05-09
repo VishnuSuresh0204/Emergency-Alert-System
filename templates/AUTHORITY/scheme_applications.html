@@ -1,0 +1,60 @@
+{% extends 'AUTHORITY/commen.html' %}
+{% block content %}
+<div class="mb-4">
+    <h2 class="fw-bold text-success font-monospace text-uppercase">Scheme Application Queue</h2>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">App Number</th>
+                        <th>Citizen</th>
+                        <th>Scheme</th>
+                        <th>Applied Date</th>
+                        <th>Status</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        <td class="ps-4 fw-bold text-success">{{ app.application_number }}</td>
+                        <td>
+                            <div class="fw-bold">{{ app.customer.name }}</div>
+                            <small class="text-muted">{{ app.customer.phone }}</small>
+                        </td>
+                        <td>{{ app.scheme.name }}</td>
+                        <td>{{ app.applied_date|date:"d M Y" }}</td>
+                        <td>
+                            {% if app.status == 'Pending' %}
+                            <span class="badge bg-warning text-dark">Pending Verification</span>
+                            {% elif app.status == 'Verified' %}
+                            <span class="badge bg-primary">Verified</span>
+                            {% elif app.status == 'Approved' %}
+                            <span class="badge bg-success">Approved</span>
+                            {% else %}
+                            <span class="badge bg-danger">{{ app.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end pe-4">
+                            <a href="/staff_verify_scheme_application/?id={{ app.id }}" class="btn btn-gp btn-sm px-3">
+                                <i class="fas fa-search me-1"></i> Verify Documents
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <p class="text-muted">No scheme applications in queue.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

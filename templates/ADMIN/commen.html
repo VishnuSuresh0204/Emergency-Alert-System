@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | Digital Gramapanchayath</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gp-green: #1b5e20;
+      --gp-dark: #102a12;
+      --gp-accent: #ffd600;
+      --admin-header: #1b5e20;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: #f7fafc;
+    }
+
+    .header-top {
+      background: #fff;
+      padding: 15px 0;
+      border-bottom: 5px solid var(--gp-accent);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+
+    .navbar-main {
+      background-color: var(--admin-header);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-link {
+      color: rgba(255, 255, 255, 0.9) !important;
+      font-weight: 500;
+      padding: 12px 18px !important;
+      transition: all 0.3s;
+      font-size: 0.9rem;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--gp-accent) !important;
+      border-radius: 4px;
+    }
+
+    .nav-link i {
+      margin-right: 5px;
+    }
+
+    .card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      margin-bottom: 25px;
+    }
+
+    .card-header {
+      background-color: #fff;
+      border-bottom: 1px solid #edf2f7;
+      padding: 20px;
+      font-weight: 700;
+      color: var(--gp-dark);
+    }
+
+    .page-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--gp-dark);
+      margin-bottom: 25px;
+    }
+
+    .btn-gp {
+      background: var(--gp-green);
+      color: white;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: 600;
+      border: none;
+      transition: all 0.3s;
+    }
+
+    .btn-gp:hover {
+      background: var(--gp-dark);
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header-top">
+    <div class="container d-flex align-items-center">
+      <img
+        src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/330px-Emblem_of_India.svg.png"
+        height="45" class="me-3">
+      <div>
+        <h4 class="mb-0 fw-bold text-success text-uppercase">Admin Portal</h4>
+        <small class="text-muted fw-bold">Digital Gramapanchayath | Full Administrative Control</small>
+      </div>
+      <div class="ms-auto d-none d-md-block text-end">
+        <div class="d-flex align-items-center">
+          <div class="text-end me-3">
+            <p class="mb-0 small fw-bold">System Administrator</p>
+            <small class="text-muted">Last login: Today</small>
+          </div>
+          <div class="bg-light p-2 rounded-circle">
+            <i class="fas fa-user-shield text-success fa-lg"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="navbar navbar-expand-lg navbar-dark navbar-main mb-4 sticky-top">
+    <div class="container">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item"><a class="nav-link" href="/admin_dashboard/"><i class="fas fa-th-large"></i> Overview</a>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="/admin_view_authorities/"><i class="fas fa-users-cog"></i>
+              Staff</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin_view_customers/"><i class="fas fa-users"></i>
+              Citizens</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin_view_requests/"><i class="fas fa-file-invoice"></i>
+              Services</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin_manage_schemes/"><i
+                class="fas fa-hand-holding-heart"></i> Schemes</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin_view_news/"><i class="fas fa-newspaper"></i> News</a>
+          </li>
+          <li class="nav-item"><a class="nav-link" href="/admin_view_feedback/"><i class="fas fa-bullhorn"></i>
+              Feedback</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin_total_reports/"><i class="fas fa-chart-line"></i>
+              Reports</a></li>
+          <li class="nav-item"><a class="nav-link" href="/admin_add_notice/"><i class="fas fa-sticky-note"></i>
+              Notices</a></li>
+        </ul>
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link fw-bold text-warning" href="/logout/"><i
+                class="fas fa-sign-out-alt"></i> Sign Out</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 shadow-sm rounded-3 mb-4">
+      <i class="fas fa-info-circle me-2"></i> {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% block content %}
+    {% endblock %}
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

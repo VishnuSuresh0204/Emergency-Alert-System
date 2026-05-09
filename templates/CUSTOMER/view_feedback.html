@@ -1,0 +1,37 @@
+{% extends 'CUSTOMER/commen.html' %}
+{% block content %}
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h4 class="mb-0">My Feedback History</h4>
+        <a href="/customer_add_feedback/" class="btn btn-sm btn-primary-custom">Add New</a>
+    </div>
+    <div class="card-body">
+        {% for feedback in feedbacks %}
+        <div class="border-bottom pb-3 mb-3">
+            <div class="d-flex justify-content-between mb-2">
+                <h6 class="fw-bold">{{ feedback.get_feedback_type_display }}</h6>
+                <small class="text-muted">{{ feedback.created_at|date:"M d, Y" }}</small>
+            </div>
+            <div class="mb-2">
+                {% for i in "12345" %}
+                {% if forloop.counter <= feedback.rating %} <i class="fas fa-star text-warning"></i>
+                    {% else %}
+                    <i class="far fa-star text-muted"></i>
+                    {% endif %}
+                    {% endfor %}
+            </div>
+            <p class="mb-2">{{ feedback.message }}</p>
+
+            {% if feedback.admin_reply %}
+            <div class="bg-light p-3 rounded ms-4 mt-2 border-start border-4 border-info">
+                <small class="fw-bold text-info">Admin Reply:</small>
+                <p class="mb-0 small text-dark">{{ feedback.admin_reply }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% empty %}
+        <p class="text-center text-muted p-4">No feedback submitted yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

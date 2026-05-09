@@ -1,0 +1,92 @@
+{% extends 'CUSTOMER/commen.html' %}
+{% block content %}
+
+<div class="mb-4 d-flex justify-content-between align-items-center">
+    <div>
+        <h2 class="fw-bold text-success mb-0">Government Welfare Schemes</h2>
+        <p class="text-muted">Browse and apply for various government initiatives designed for you.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+
+{% for scheme in schemes %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body">
+
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-success-subtle p-3 rounded-3 me-3">
+                        <i class="fas fa-hand-holding-heart fa-2x text-success"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">{{ scheme.name }}</h5>
+                </div>
+
+                <p class="text-muted small mb-4">
+                    {{ scheme.description|truncatewords:25 }}
+                </p>
+
+                <div class="bg-light p-3 rounded-3 mb-4">
+                    <h6 class="fw-bold small mb-2 text-success">
+                        <i class="fas fa-calendar-alt me-2"></i> Application Window:
+                    </h6>
+                    <p class="small mb-1 text-dark">
+                        {% if scheme.start_date %}
+                            From: <b>{{ scheme.start_date|date:"d M Y" }}</b>
+                        {% else %}
+                            Available Now
+                        {% endif %}
+                    </p>
+                    <p class="small mb-0 text-dark">
+                        {% if scheme.end_date %}
+                            Until: <b>{{ scheme.end_date|date:"d M Y" }}</b>
+                        {% else %}
+                            No End Date
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="bg-light p-3 rounded-3 mb-4">
+                    <h6 class="fw-bold small mb-2 text-success">
+                        <i class="fas fa-user-check me-2"></i> Eligibility:
+                    </h6>
+                    <p class="small mb-0">
+                        {{ scheme.eligibility|truncatewords:20 }}
+                    </p>
+                </div>
+
+                <div class="d-grid">
+                    {% if scheme.start_date and today < scheme.start_date %}
+                        <button class="btn btn-secondary" disabled>
+                            <i class="fas fa-clock me-2"></i> Upcoming
+                        </button>
+
+                    {% elif scheme.end_date and today > scheme.end_date %}
+                        <button class="btn btn-danger" disabled>
+                            <i class="fas fa-times-circle me-2"></i> Ended
+                        </button>
+
+                    {% else %}
+                        <a href="/customer_apply_scheme/?id={{ scheme.id }}"
+                           class="btn btn-gp-primary">
+                            <i class="fas fa-paper-plane me-2"></i> Apply Now
+                        </a>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+{% empty %}
+    <div class="col-12 text-center py-5">
+        <div class="bg-white p-5 rounded-4 shadow-sm">
+            <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">No active schemes found at this time.</h4>
+            <p>Please check back later for new government updates.</p>
+        </div>
+    </div>
+{% endfor %}
+
+</div>
+{% endblock %}

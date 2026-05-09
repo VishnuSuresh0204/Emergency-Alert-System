@@ -1,0 +1,36 @@
+{% extends 'ADMIN/commen.html' %}
+{% block content %}
+<div class="mb-4">
+    <h2 class="page-title">Post New Update</h2>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Headline</label>
+                        <input type="text" name="title" class="form-control" placeholder="Enter news title..." required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Content</label>
+                        <textarea name="content" class="form-control" rows="6"
+                            placeholder="Write full news content here..." required></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Featured Image</label>
+                        <input type="file" name="image" class="form-control" accept="image/*">
+                        <small class="text-muted">Optional: Upload a relevant image for this news item.</small>
+                    </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="/admin_view_news/" class="btn btn-light px-4">Cancel</a>
+                        <button type="submit" class="btn btn-gp px-5">Publish Now</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends 'CUSTOMER/commen.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h3 class="mb-0">New Certificate Application</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Select Certificate Type</label>
+                        <select name="cert_type" class="form-select border-primary" required>
+                            <option value="">Choose a certificate type...</option>
+                            {% for type in cert_types %}
+                            <option value="{{ type.id }}">{{ type.name }} - ₹{{ type.base_fee }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <h5 class="mt-4 mb-3 border-bottom pb-2">Applicant Details</h5>
+
+                    <div class="mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="name" value="{{ customer.name }}" class="form-control" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Date of Birth</label>
+                            <input type="date" name="dob" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Father/Husband's Name</label>
+                            <input type="text" name="father_name" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Permanent Address</label>
+                        <textarea name="address" class="form-control" rows="3"
+                            required>{{ customer.address }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Additional Details (Any specific info required)</label>
+                        <textarea name="details" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <h5 class="mt-4 mb-3 border-bottom pb-2">Upload Supporting Documents</h5>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Identity Proof (Aadhar/Voter ID)</label>
+                            <input type="file" name="doc1" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Address Proof</label>
+                            <input type="file" name="doc2" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Other Supporting Document</label>
+                        <input type="file" name="doc3" class="form-control">
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary-custom btn-lg">Submit Application</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

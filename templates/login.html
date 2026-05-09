@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Digital Gramapanchayath</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --gp-green: #1b5e20;
+            --gp-dark: #102a12;
+            --gp-accent: #ffd600;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #f4f7f6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header-strip {
+            background-color: #fff;
+            padding: 15px 0;
+            border-bottom: 4px solid var(--gp-accent);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .login-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            border: none;
+            border-radius: 15px;
+            background: #fff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .card-accent {
+            height: 6px;
+            background: var(--gp-green);
+        }
+
+        .btn-gp {
+            background-color: var(--gp-green);
+            color: white;
+            border: none;
+            padding: 12px;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-gp:hover {
+            background-color: var(--gp-dark);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .form-control {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
+        .form-control:focus {
+            border-color: var(--gp-green);
+            box-shadow: 0 0 0 0.25rem rgba(27, 94, 32, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="header-strip">
+        <div class="container d-flex align-items-center">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/330px-Emblem_of_India.svg.png"
+                height="45" class="me-3">
+            <div>
+                <h5 class="mb-0 fw-bold text-success">Digital Gramapanchayath</h5>
+                <small class="text-muted">Citizen Governance Portal</small>
+            </div>
+        </div>
+    </header>
+
+    <div class="login-container">
+        <div class="login-card">
+            <div class="card-accent"></div>
+            <div class="p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="bg-light d-inline-block p-3 rounded-circle mb-3">
+                        <i class="fas fa-user-lock fa-2x text-success"></i>
+                    </div>
+                    <h3 class="fw-bold">Welcome Back</h3>
+                    <p class="text-muted">Please sign in to your account</p>
+                </div>
+
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show small" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-uppercase">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i
+                                    class="fas fa-user text-muted"></i></span>
+                            <input type="text" name="username" class="form-control border-start-0"
+                                placeholder="Enter username" required>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-uppercase">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i
+                                    class="fas fa-key text-muted"></i></span>
+                            <input type="password" name="password" class="form-control border-start-0"
+                                placeholder="••••••••" required>
+                        </div>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-gp">SIGN IN</button>
+                    </div>
+
+                    <div class="text-center">
+                        <span class="text-muted small">Don't have an account?</span>
+                        <a href="/register/" class="text-success small fw-bold text-decoration-none ms-1">Register
+                            Now</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer class="py-3 text-center text-muted small">
+        <p class="mb-0">© 2026 Digital Gramapanchayath. Powered by IKM.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

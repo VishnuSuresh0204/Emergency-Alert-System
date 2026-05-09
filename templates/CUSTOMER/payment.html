@@ -1,0 +1,48 @@
+{% extends 'CUSTOMER/commen.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h4 class="mb-0">Secure Payment</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info d-flex align-items-center">
+                    <i class="fas fa-info-circle fa-2x me-3"></i>
+                    <div>
+                        <strong>Paying for:</strong> {{ application.certificate_type.name }}<br>
+                        <strong>Application No:</strong> {{ application.application_number }}
+                    </div>
+                </div>
+
+                <h3 class="text-center my-4">₹{{ application.certificate_type.base_fee }}</h3>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="amount" value="{{ application.certificate_type.base_fee }}">
+
+                    <div class="mb-3">
+                        <label class="form-label">Payment Method</label>
+                        <div class="form-check card p-3 mb-2">
+                            <input class="form-check-input" type="radio" name="payment_method" value="Online" checked>
+                            <label class="form-check-label">
+                                <i class="fas fa-credit-card me-2 text-primary"></i> Credit/Debit Card
+                            </label>
+                        </div>
+                        <div class="form-check card p-3 mb-2">
+                            <input class="form-check-input" type="radio" name="payment_method" value="UPI">
+                            <label class="form-check-label">
+                                <i class="fas fa-mobile-alt me-2 text-success"></i> UPI
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-success btn-lg">Pay Securely</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
