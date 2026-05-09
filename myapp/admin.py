@@ -1,17 +1,13 @@
 from django.contrib import admin
-from .models import Login, Authority, CertificateType, CertificateRequest, Payment, Certificate, Customer, Feedback, Scheme, SchemeApplication, News, Complaint, AdminNotice
+from .models import *
 
-# Register your models here.
 admin.site.register(Login)
-admin.site.register(Authority)
-admin.site.register(CertificateType)
-admin.site.register(CertificateRequest)
-admin.site.register(Payment)
-admin.site.register(Certificate)
-admin.site.register(Customer)
+admin.site.register(District)
+admin.site.register(Citizen)
+admin.site.register(Staff)
+admin.site.register(Volunteer)
+admin.site.register(EmergencyType)
+admin.site.register(EmergencyReport)
+admin.site.register(RescueRequest)
+admin.site.register(EmergencyAlert)
 admin.site.register(Feedback)
-admin.site.register(Scheme)
-admin.site.register(SchemeApplication)
-admin.site.register(News)
-admin.site.register(Complaint)
-admin.site.register(AdminNotice)

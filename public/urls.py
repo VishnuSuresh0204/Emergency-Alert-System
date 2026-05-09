@@ -1,6 +1,3 @@
-"""
-URL configuration for public project.
-"""
 from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
@@ -11,63 +8,47 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # Public URLs
-    path('', views.index),
-    path('register/', views.register_public),
-    path('login/', views.login_view),
-    path('logout/', views.logout_view),
+    path('', views.index, name='index'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('register_citizen/', views.register_citizen, name='register_citizen'),
+    path('register_volunteer/', views.register_volunteer, name='register_volunteer'),
     
     # Admin URLs
-    path('admin_home/', views.admin_home),
-    path('admin_dashboard/', views.admin_home),
-    path('admin_add_authority/', views.admin_add_authority),
-    path('admin_view_authorities/', views.admin_view_authorities),
-    path('admin_edit_authority/', views.admin_edit_authority),
-    path('admin_block_authority/', views.admin_block_authority),
-    path('admin_unblock_authority/', views.admin_unblock_authority),
-    path('admin_view_requests/', views.admin_view_requests),
-    path('admin_forward_request/', views.admin_forward_request),
-    path('admin_view_feedback/', views.admin_view_feedback),
-    path('admin_reply_feedback/', views.admin_reply_feedback),
-    path('admin_view_customers/', views.admin_view_customers),
-    path('admin_block_customer/', views.admin_block_customer),
-    path('admin_unblock_customer/', views.admin_unblock_customer),
-    path('admin_manage_schemes/', views.admin_manage_schemes),
-    path('admin_add_scheme/', views.admin_add_scheme),
-    path('admin_edit_scheme/', views.admin_edit_scheme),
-    path('admin_view_news/', views.admin_view_news),
-    path('admin_add_news/', views.admin_add_news),
-    path('admin_edit_news/', views.admin_edit_news),
-    path('admin_toggle_news_status/', views.admin_toggle_news_status),
-    path('admin_total_reports/', views.admin_total_reports),
-    path('admin_add_notice/', views.admin_add_notice),
+    path('admin_home/', views.admin_home, name='admin_home'),
+    path('admin_manage_districts/', views.admin_manage_districts, name='admin_manage_districts'),
+    path('admin_add_district/', views.admin_add_district, name='admin_add_district'),
+    path('admin_manage_staff/', views.admin_manage_staff, name='admin_manage_staff'),
+    path('admin_add_staff/', views.admin_add_staff, name='admin_add_staff'),
+    path('admin_approve_volunteers/', views.admin_approve_volunteers, name='admin_approve_volunteers'),
+    path('admin_manage_emergency_types/', views.admin_manage_emergency_types, name='admin_manage_emergency_types'),
+    path('admin_add_emergency_type/', views.admin_add_emergency_type, name='admin_add_emergency_type'),
+    path('admin_view_all_reports/', views.admin_view_all_reports, name='admin_view_all_reports'),
+    path('admin_send_alert/', views.admin_send_alert, name='admin_send_alert'),
+    path('admin_view_feedback/', views.admin_view_feedback, name='admin_view_feedback'),
     
-    # Authority URLs
-    path('authority_home/', views.authority_home),
-    path('authority_view_requests/', views.authority_view_requests),
-    path('authority_request_detail/', views.authority_request_detail),
-    path('authority_issue_certificate/', views.authority_issue_certificate),
-    path('authority_issued_certificates/', views.authority_issued_certificates),
-    path('staff_view_scheme_applications/', views.staff_view_scheme_applications),
-    path('staff_verify_scheme_application/', views.staff_verify_scheme_application),
-    path('staff_view_complaints/', views.staff_view_complaints),
-    path('staff_reply_complaint/', views.staff_reply_complaint),
-    path('staff_view_notices/', views.staff_view_notices),
+    # Staff URLs
+    path('staff_home/', views.staff_home, name='staff_home'),
+    path('staff_view_reports/', views.staff_view_reports, name='staff_view_reports'),
+    path('staff_verify_report/<int:report_id>/', views.staff_verify_report, name='staff_verify_report'),
+    path('staff_view_rescue_requests/', views.staff_view_rescue_requests, name='staff_view_rescue_requests'),
+    path('staff_assign_volunteers/<int:request_id>/', views.staff_assign_volunteers, name='staff_assign_volunteers'),
+    path('staff_update_situation/<int:report_id>/', views.staff_update_situation, name='staff_update_situation'),
+    path('staff_broadcast_alert/', views.staff_broadcast_alert, name='staff_broadcast_alert'),
     
-    # Customer URLs
-    path('customer_home/', views.customer_home),
-    path('customer_apply_certificate/', views.customer_apply_certificate),
-    path('customer_applications/', views.customer_view_applications),
-    path('customer_application_detail/', views.customer_application_detail),
-    path('customer_payment/', views.customer_payment),
-    path('customer_add_feedback/', views.customer_add_feedback),
-    path('customer_view_feedback/', views.customer_view_feedback),
-    path('customer_view_schemes/', views.customer_view_schemes),
-    path('customer_apply_scheme/', views.customer_apply_scheme),
-    path('customer_scheme_status/', views.customer_scheme_status),
-    path('customer_scheme_application_detail/', views.customer_scheme_application_detail),
-    path('customer_add_complaint/', views.customer_add_complaint),
-    path('customer_view_complaints/', views.customer_view_complaints),
-    path('customer_view_news/', views.customer_view_news),
+    # Volunteer URLs
+    path('volunteer_home/', views.volunteer_home, name='volunteer_home'),
+    path('volunteer_view_assignments/', views.volunteer_view_assignments, name='volunteer_view_assignments'),
+    path('volunteer_update_status/', views.volunteer_update_status, name='volunteer_update_status'),
+    path('volunteer_view_emergency_map/', views.volunteer_view_emergency_map, name='volunteer_view_emergency_map'),
+    
+    # Citizen URLs
+    path('citizen_home/', views.citizen_home, name='citizen_home'),
+    path('citizen_report_emergency/', views.citizen_report_emergency, name='citizen_report_emergency'),
+    path('citizen_view_reports/', views.citizen_view_reports, name='citizen_view_reports'),
+    path('citizen_request_rescue/<int:report_id>/', views.citizen_request_rescue, name='citizen_request_rescue'),
+    path('citizen_view_alerts/', views.citizen_view_alerts, name='citizen_view_alerts'),
+    path('citizen_add_feedback/', views.citizen_add_feedback, name='citizen_add_feedback'),
 ]
 
 if settings.DEBUG:
