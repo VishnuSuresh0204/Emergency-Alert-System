@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+        <h1>Welcome, {{ citizen.name }}</h1>
+        <p style="color: var(--text-dim);">District: <strong>{{ citizen.district.name }}</strong></p>
+    </div>
+    <a href="/citizen_report_emergency/" class="btn-emergency" style="text-decoration: none;">
+        <i class="fas fa-warning"></i> Report Emergency
+    </a>
+</div>
+
+<div class="dashboard-grid">
+    <div class="card" style="grid-column: span 2;">
+        <h3><i class="fas fa-bell" style="color: var(--primary);"></i> Active Alerts for Your District</h3>
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            {% for alert in alerts %}
+            <div style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border-left: 4px solid {% if alert.alert_level == 'Red' %}var(--primary){% elif alert.alert_level == 'Orange' %}var(--accent){% else %}#fbbf24{% endif %};">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <h4 style="margin: 0;">{{ alert.title }}</h4>
+                    <small style="color: var(--text-dim);">{{ alert.created_at|timesince }} ago</small>
+                </div>
+                <p>{{ alert.message }}</p>
+            </div>
+            {% empty %}
+            <p style="color: var(--text-dim); text-align: center; padding: 2rem;">Your district is currently stable. Stay safe!</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

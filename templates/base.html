@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>District Emergency Alert System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #d32f2f; /* Emergency Red */
+            --primary-dark: #b71c1c;
+            --secondary: #1e3a8a; /* Deep blue */
+            --accent: #f59e0b; /* Warning Yellow */
+            --bg-dark: #0f172a;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text-light: #f8fafc;
+            --text-dim: #94a3b8;
+            --glass: rgba(15, 23, 42, 0.8);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* Hero Background with Generated Image */
+        .page-wrapper {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 58, 138, 0.7) 100%), 
+                        url('/media/emergency_background_1778297283497.png');
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+        }
+
+        nav {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .btn-emergency {
+            background: var(--primary);
+            color: white !important;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(211, 47, 47, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(211, 47, 47, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); }
+        }
+
+        .container {
+            padding: 2rem 5%;
+            flex: 1;
+        }
+
+        .card {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            margin-bottom: 2rem;
+        }
+
+        h1, h2, h3 {
+            margin-bottom: 1.5rem;
+            color: var(--text-light);
+        }
+
+        .alert-banner {
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        input, select, textarea {
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 1rem;
+        }
+
+        button[type="submit"] {
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button[type="submit"]:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-pending { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .status-verified { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .status-danger { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: var(--glass);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .stat-value { font-size: 2rem; font-weight: 700; }
+        .stat-label { color: var(--text-dim); font-size: 0.9rem; }
+
+        footer {
+            padding: 3rem 5%;
+            background: rgba(15, 23, 42, 0.95);
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-dim);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-overlay"></div>
+    <div class="page-wrapper">
+        <nav>
+            <a href="/" class="logo">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>DISTRICT RESCUE</span>
+            </a>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                {% if not request.user.is_authenticated %}
+                    <a href="/login/">Login</a>
+                    <a href="/register_citizen/">Join as Citizen</a>
+                    <a href="/register_volunteer/" class="btn-volunteer">Volunteer</a>
+                {% else %}
+                    {% if request.user.userType == 'admin' %}
+                        <a href="/admin_home/">Dashboard</a>
+                    {% elif request.user.userType == 'staff' %}
+                        <a href="/staff_home/">Staff Dashboard</a>
+                    {% elif request.user.userType == 'volunteer' %}
+                        <a href="/volunteer_home/">Volunteer Portal</a>
+                    {% elif request.user.userType == 'user' %}
+                        <a href="/citizen_home/">My Safety</a>
+                    {% endif %}
+                    <a href="/logout/">Logout ({{ request.user.username }})</a>
+                {% endif %}
+            </div>
+        </nav>
+
+        {% if messages %}
+            <div class="container" style="padding-bottom: 0;">
+                {% for message in messages %}
+                    <div class="alert-banner" style="background: {% if message.tags == 'error' %}var(--primary){% else %}#10b981{% endif %};">
+                        <i class="fas {% if message.tags == 'error' %}fa-circle-xmark{% else %}fa-circle-check{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <main class="container">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer>
+            <p>&copy; 2026 District Based Emergency Alert System. All Rights Reserved.</p>
+            <p style="font-size: 0.8rem; margin-top: 0.5rem;">Coordinated response for a safer tomorrow.</p>
+        </footer>
+    </div>
+</body>
+</html>
