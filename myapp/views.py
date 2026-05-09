@@ -1,816 +1,319 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from .models import *
-from django.db.models import Q, Sum, Count
-from datetime import datetime
-from django.utils import timezone
+from django.db.models import Q
 
-# ==========================================
-# PUBLIC VIEWS
-# ==========================================
+# --- Public Views ---
 
 def index(request):
-    return render(request, 'index.html')
-
-def register_public(request):
-    if request.method == "POST":
-        u = request.POST['username']
-        p = request.POST['password']
-        f = request.POST['fname']
-        e = request.POST['email']
-        ph = request.POST['phone']
-        add = request.POST['address']
-        dob = request.POST['dob']
-        aadhar = request.POST['aadhar']
-        
-        try:
-            user = Login.objects.create_user(username=u, password=p, userType='customer', viewPass=p)
-            Customer.objects.create(
-                loginid=user,
-                name=f,
-                email=e,
-                phone=ph,
-                address=add,
-                date_of_birth=dob,
-                aadhar_number=aadhar
-            )
-            messages.success(request, "Registration Successful! Please Login.")
-            return redirect('/login/')
-        except Exception as e:
-            messages.error(request, f"Registration Failed: {e}")
-            return redirect('/register/')
-            
-    return render(request, 'customer_register.html')
+    alerts = EmergencyAlert.objects.filter(is_active=True).order_by('-created_at')[:5]
+    return render(request, 'index.html', {'alerts': alerts})
 
 def login_view(request):
     if request.method == "POST":
         u = request.POST.get('username')
         p = request.POST.get('password')
-        
-        user = authenticate(request, username=u, password=p)
-        
-        if user is not None:
-            if user.userType == 'admin':
-                login(request, user)
-                request.session['lid'] = user.id
-                return redirect('/admin_home/')
-                
-            elif user.userType == 'authority':
-                try:
-                    auth = Authority.objects.get(loginid=user)
-                    if auth.status == 'active':
-                        login(request, user)
-                        request.session['lid'] = user.id
-                        return redirect('/authority_home/')
-                    else:
-                        messages.error(request, f"Account is {auth.status}")
-                        return redirect('/login/')
-                except Authority.DoesNotExist:
-                    messages.error(request, "Authority profile not found")
-                    return redirect('/login/')
-                    
-            elif user.userType == 'customer':
-                try:
-                    cust = Customer.objects.get(loginid=user)
-                    if cust.status == 'active':
-                        login(request, user)
-                        request.session['lid'] = user.id
-                        return redirect('/customer_home/')
-                    else:
-                        messages.error(request, f"Account is {cust.status}")
-                        return redirect('/login/')
-                except Customer.DoesNotExist:
-                    messages.error(request, "Customer profile not found")
-                    return redirect('/login/')
-            else:
-                messages.error(request, "Invalid User Type")
-                return redirect('/login/')
-        else:
-            messages.error(request, "Invalid username or password")
-            return redirect('/login/')
-            
+        user = authenticate(username=u, password=p)
+        if user:
+            login(request, user)
+            if user.userType == "admin":
+                return redirect('admin_home')
+            elif user.userType == "staff":
+                return redirect('staff_home')
+            elif user.userType == "volunteer":
+                return redirect('volunteer_home')
+            elif user.userType == "user":
+                return redirect('citizen_home')
+        messages.error(request, "Invalid Credentials")
     return render(request, 'login.html')
 
 def logout_view(request):
     logout(request)
-    return redirect('/')
+    return redirect('index')
 
-# ==========================================
-# ADMIN VIEWS
-# ==========================================
+def register_citizen(request):
+    districts = District.objects.all()
+    if request.method == "POST":
+        u = request.POST.get('username')
+        p = request.POST.get('password')
+        n = request.POST.get('name')
+        e = request.POST.get('email')
+        ph = request.POST.get('phone')
+        ad = request.POST.get('address')
+        di = request.POST.get('district')
+        pic = request.FILES.get('profile_pic')
+        
+        if Login.objects.filter(username=u).exists():
+            messages.error(request, "Username already exists")
+        else:
+            log = Login.objects.create_user(username=u, password=p, userType="user", viewPass=p)
+            district = District.objects.get(id=di)
+            Citizen.objects.create(loginid=log, name=n, email=e, phone=ph, address=ad, district=district, profile_pic=pic)
+            messages.success(request, "Registration Successful")
+            return redirect('login')
+    return render(request, 'register_citizen.html', {'districts': districts})
 
-@login_required
+def register_volunteer(request):
+    districts = District.objects.all()
+    if request.method == "POST":
+        u = request.POST.get('username')
+        p = request.POST.get('password')
+        n = request.POST.get('name')
+        e = request.POST.get('email')
+        ph = request.POST.get('phone')
+        sk = request.POST.get('skills')
+        di = request.POST.get('district')
+        pic = request.FILES.get('profile_pic')
+        
+        if Login.objects.filter(username=u).exists():
+            messages.error(request, "Username already exists")
+        else:
+            log = Login.objects.create_user(username=u, password=p, userType="volunteer", viewPass=p)
+            district = District.objects.get(id=di)
+            Volunteer.objects.create(loginid=log, name=n, email=e, phone=ph, skills=sk, district=district, profile_pic=pic)
+            messages.success(request, "Registration Successful. Waiting for Admin Approval.")
+            return redirect('login')
+    return render(request, 'register_volunteer.html', {'districts': districts})
+
+# --- Admin Views ---
+
 def admin_home(request):
-    if request.user.userType != 'admin': return redirect('/')
-    
-    # Overview Stats
-    total_authorities = Authority.objects.filter(status='active').count()
-    total_customers = Customer.objects.count()
-    total_requests = CertificateRequest.objects.count()
-    total_issued = Certificate.objects.count()
-    total_revenue = Payment.objects.filter(payment_status='Completed').aggregate(total=Sum('amount'))['total'] or 0
-    total_cert_types = CertificateType.objects.filter(is_active=True).count()
-    
-    # Request Status Breakdown
-    stats_by_status = CertificateRequest.objects.values('status').annotate(total=Count('id'))
-    status_counts = {item['status']: item['total'] for item in stats_by_status}
-    
-    # Recent Activities
-    recent_requests = CertificateRequest.objects.all().order_by('-applied_date')[:6]
-    recent_feedbacks = Feedback.objects.all().order_by('-created_at')[:5]
-    
-    # Top Certificate Types
-    top_services = CertificateRequest.objects.values('certificate_type__name').annotate(
-        total=Count('id')
-    ).order_by('-total')[:5]
-    
-    context = {
-        'total_authorities': total_authorities,
-        'total_customers': total_customers,
-        'total_requests': total_requests,
-        'total_issued': total_issued,
-        'total_revenue': total_revenue,
-        'total_cert_types': total_cert_types,
-        'status_counts': status_counts,
-        'recent_requests': recent_requests,
-        'recent_feedbacks': recent_feedbacks,
-        'top_services': top_services,
+    stats = {
+        'districts': District.objects.count(),
+        'staff': Staff.objects.count(),
+        'volunteers': Volunteer.objects.count(),
+        'active_alerts': EmergencyAlert.objects.filter(is_active=True).count(),
+        'pending_reports': EmergencyReport.objects.filter(status='Pending').count(),
     }
-    return render(request, 'ADMIN/admin_home.html', context)
+    return render(request, 'ADMIN/admin_home.html', stats)
 
-@login_required
-def admin_add_authority(request):
-    if request.user.userType != 'admin': return redirect('/')
-    
+def admin_manage_districts(request):
+    districts = District.objects.all()
+    return render(request, 'ADMIN/manage_districts.html', {'districts': districts})
+
+def admin_add_district(request):
     if request.method == "POST":
-        u = request.POST['username']
-        p = request.POST['password']
-        name = request.POST['name']
-        email = request.POST['email']
-        phone = request.POST['phone']
-        designation = request.POST['designation']
-        address = request.POST['address']
-        
-        try:
-            user = Login.objects.create_user(username=u, password=p, userType='authority', viewPass=p)
-            
-            authority = Authority.objects.create(
-                loginid=user,
-                name=name,
-                email=email,
-                phone=phone,
-                designation=designation,
-                office_address=address
-            )
-            
-            if 'profile_pic' in request.FILES:
-                authority.profile_pic = request.FILES['profile_pic']
-                authority.save()
-                
-            messages.success(request, "Authority Added Successfully")
-            return redirect('/admin_view_authorities/')
-        except Exception as e:
-            messages.error(request, f"Error: {e}")
-            
-    return render(request, 'ADMIN/add_authority.html')
+        n = request.POST.get('name')
+        d = request.POST.get('description')
+        District.objects.create(name=n, description=d)
+        messages.success(request, "District Added")
+        return redirect('admin_manage_districts')
+    return render(request, 'ADMIN/add_district.html')
 
-@login_required
-def admin_view_authorities(request):
-    if request.user.userType != 'admin': return redirect('/')
-    authorities = Authority.objects.all()
-    return render(request, 'ADMIN/view_authorities.html', {'authorities': authorities})
+def admin_manage_staff(request):
+    staff = Staff.objects.all()
+    return render(request, 'ADMIN/manage_staff.html', {'staff': staff})
 
-@login_required
-def admin_edit_authority(request):
-    if request.user.userType != 'admin': return redirect('/')
-    
-    auth_id = request.GET.get('id')
-    authority = get_object_or_404(Authority, id=auth_id)
-    
+def admin_add_staff(request):
+    districts = District.objects.all()
     if request.method == "POST":
-        authority.name = request.POST['name']
-        authority.email = request.POST['email']
-        authority.phone = request.POST['phone']
-        authority.designation = request.POST['designation']
-        authority.office_address = request.POST['address']
-        authority.status = request.POST['status']
+        u = request.POST.get('username')
+        p = request.POST.get('password')
+        n = request.POST.get('name')
+        e = request.POST.get('email')
+        ph = request.POST.get('phone')
+        di = request.POST.get('district')
+        des = request.POST.get('designation')
+        pic = request.FILES.get('profile_pic')
         
-        if 'profile_pic' in request.FILES:
-            authority.profile_pic = request.FILES['profile_pic']
-            
-        authority.save()
-        messages.success(request, "Authority Updated Successfully")
-        return redirect('/admin_view_authorities/')
-        
-    return render(request, 'ADMIN/edit_authority.html', {'authority': authority})
+        log = Login.objects.create_user(username=u, password=p, userType="staff", viewPass=p)
+        district = District.objects.get(id=di)
+        Staff.objects.create(loginid=log, name=n, email=e, phone=ph, district=district, designation=des, profile_pic=pic)
+        messages.success(request, "Staff Added")
+        return redirect('admin_manage_staff')
+    return render(request, 'ADMIN/add_staff.html', {'districts': districts})
 
-@login_required
-def admin_block_authority(request):
-    if request.user.userType != 'admin': return redirect('/')
-    auth_id = request.GET.get('id')
-    authority = get_object_or_404(Authority, id=auth_id)
-    authority.status = 'inactive'
-    authority.save()
-    messages.warning(request, f"Authority {authority.name} has been blocked.")
-    return redirect('/admin_view_authorities/')
+def admin_approve_volunteers(request):
+    volunteers = Volunteer.objects.filter(status="Pending")
+    if request.method == "POST":
+        vid = request.POST.get('vid')
+        action = request.POST.get('action')
+        v = Volunteer.objects.get(id=vid)
+        if action == "approve":
+            v.status = "Approved"
+            v.save()
+            messages.success(request, "Volunteer Approved")
+        else:
+            v.loginid.delete() # Deletes user login as well
+            messages.info(request, "Volunteer Rejected")
+        return redirect('admin_approve_volunteers')
+    return render(request, 'ADMIN/approve_volunteers.html', {'volunteers': volunteers})
 
-@login_required
-def admin_unblock_authority(request):
-    if request.user.userType != 'admin': return redirect('/')
-    auth_id = request.GET.get('id')
-    authority = get_object_or_404(Authority, id=auth_id)
-    authority.status = 'active'
-    authority.save()
-    messages.success(request, f"Authority {authority.name} has been unblocked.")
-    return redirect('/admin_view_authorities/')
+def admin_manage_emergency_types(request):
+    types = EmergencyType.objects.all()
+    return render(request, 'ADMIN/manage_emergency_types.html', {'types': types})
 
-@login_required
-def admin_view_requests(request):
-    if request.user.userType != 'admin': return redirect('/')
-    
-    requests = CertificateRequest.objects.all().order_by('-applied_date')
-    authorities = Authority.objects.filter(status='active')
-    
-    status_filter = request.GET.get('status')
-    if status_filter:
-        requests = requests.filter(status=status_filter)
-        
-    return render(request, 'ADMIN/view_requests.html', {
-        'requests': requests,
-        'authorities': authorities
-    })
+def admin_add_emergency_type(request):
+    if request.method == "POST":
+        n = request.POST.get('name')
+        d = request.POST.get('description')
+        ic = request.FILES.get('icon')
+        EmergencyType.objects.create(name=n, description=d, icon=ic)
+        return redirect('admin_manage_emergency_types')
+    return render(request, 'ADMIN/add_emergency_type.html')
 
-@login_required
-def admin_forward_request(request):
-    if request.user.userType != 'admin': return redirect('/')
-    
-    req_id = request.POST.get('request_id')
-    auth_id = request.POST.get('authority_id')
-    
-    cert_req = get_object_or_404(CertificateRequest, id=req_id)
-    authority = get_object_or_404(Authority, id=auth_id)
-    
-    cert_req.assigned_authority = authority
-    cert_req.status = 'Forwarded'
-    cert_req.forwarded_date = datetime.now()
-    cert_req.save()
-    
-    messages.success(request, f"Request forwarded to {authority.name}")
-    return redirect('/admin_view_requests/')
+def admin_view_all_reports(request):
+    reports = EmergencyReport.objects.all().order_by('-reported_at')
+    return render(request, 'ADMIN/view_all_reports.html', {'reports': reports})
 
-@login_required
+def admin_send_alert(request):
+    districts = District.objects.all()
+    if request.method == "POST":
+        ti = request.POST.get('title')
+        msg = request.POST.get('message')
+        lv = request.POST.get('level')
+        di = request.POST.get('district')
+        district = District.objects.get(id=di)
+        EmergencyAlert.objects.create(title=ti, message=msg, alert_level=lv, district=district, posted_by=request.user)
+        messages.success(request, "Alert Sent to District Citizens")
+        return redirect('admin_home')
+    return render(request, 'ADMIN/send_alert.html', {'districts': districts})
+
 def admin_view_feedback(request):
-    if request.user.userType != 'admin': return redirect('/')
     feedbacks = Feedback.objects.all().order_by('-created_at')
     return render(request, 'ADMIN/view_feedback.html', {'feedbacks': feedbacks})
 
-@login_required
-def admin_reply_feedback(request):
-    if request.user.userType != 'admin': return redirect('/')
-    
-    feedback_id = request.POST.get('feedback_id')
-    reply = request.POST.get('reply')
-    
-    feedback = get_object_or_404(Feedback, id=feedback_id)
-    feedback.admin_reply = reply
-    feedback.save()
-    
-    messages.success(request, "Reply sent successfully")
-    return redirect('/admin_view_feedback/')
+# --- Staff Views ---
 
-@login_required
-def admin_view_customers(request):
-    if request.user.userType != 'admin': return redirect('/')
-    customers = Customer.objects.all()
-    return render(request, 'ADMIN/view_customers.html', {'customers': customers})
+def staff_home(request):
+    staff = Staff.objects.get(loginid=request.user)
+    reports = EmergencyReport.objects.filter(district=staff.district).order_by('-reported_at')[:5]
+    return render(request, 'STAFF/staff_home.html', {'staff': staff, 'reports': reports})
 
-@login_required
-def admin_block_customer(request):
-    if request.user.userType != 'admin': return redirect('/')
-    cust_id = request.GET.get('id')
-    customer = get_object_or_404(Customer, id=cust_id)
-    customer.status = 'inactive'
-    customer.save()
-    messages.warning(request, f"Customer {customer.name} has been blocked.")
-    return redirect('/admin_view_customers/')
+def staff_view_reports(request):
+    staff = Staff.objects.get(loginid=request.user)
+    reports = EmergencyReport.objects.filter(district=staff.district).order_by('-reported_at')
+    return render(request, 'STAFF/view_reports.html', {'reports': reports})
 
-@login_required
-def admin_unblock_customer(request):
-    if request.user.userType != 'admin': return redirect('/')
-    cust_id = request.GET.get('id')
-    customer = get_object_or_404(Customer, id=cust_id)
-    customer.status = 'active'
-    customer.save()
-    messages.success(request, f"Customer {customer.name} has been unblocked.")
-    return redirect('/admin_view_customers/')
-
-@login_required
-def admin_manage_schemes(request):
-    if request.user.userType != 'admin': return redirect('/')
-    schemes = Scheme.objects.all()
-    return render(request, 'ADMIN/manage_schemes.html', {'schemes': schemes})
-
-@login_required
-def admin_add_scheme(request):
-    if request.user.userType != 'admin': return redirect('/')
+def staff_verify_report(request, report_id):
+    report = get_object_or_404(EmergencyReport, id=report_id)
     if request.method == "POST":
-        name = request.POST['name']
-        desc = request.POST['description']
-        eligibility = request.POST['eligibility']
-        benefits = request.POST['benefits']
-        start_date = request.POST.get('start_date') or None
-        end_date = request.POST.get('end_date') or None
-        Scheme.objects.create(
-            name=name, 
-            description=desc, 
-            eligibility=eligibility, 
-            benefits=benefits,
-            start_date=start_date,
-            end_date=end_date
-        )
-        messages.success(request, "Scheme Added Successfully")
-        return redirect('/admin_manage_schemes/')
-    return render(request, 'ADMIN/add_scheme.html')
+        st = request.POST.get('status')
+        rem = request.POST.get('remarks')
+        report.status = st
+        report.remarks = rem
+        report.verified_by = Staff.objects.get(loginid=request.user)
+        report.save()
+        messages.success(request, "Report Verified and Status Updated")
+        return redirect('staff_view_reports')
+    return render(request, 'STAFF/verify_report.html', {'report': report})
 
-@login_required
-def admin_edit_scheme(request):
-    if request.user.userType != 'admin': return redirect('/')
-    scheme_id = request.GET.get('id')
-    scheme = get_object_or_404(Scheme, id=scheme_id)
+def staff_view_rescue_requests(request):
+    staff = Staff.objects.get(loginid=request.user)
+    requests = RescueRequest.objects.filter(district=staff.district).order_by('-created_at')
+    return render(request, 'STAFF/view_rescue_requests.html', {'requests': requests})
+
+def staff_assign_volunteers(request, request_id):
+    rescue_request = get_object_or_404(RescueRequest, id=request_id)
+    volunteers = Volunteer.objects.filter(district=rescue_request.district, status="Approved", availability_status="Available")
     if request.method == "POST":
-        scheme.name = request.POST['name']
-        scheme.description = request.POST['description']
-        scheme.eligibility = request.POST['eligibility']
-        scheme.benefits = request.POST['benefits']
-        scheme.start_date = request.POST.get('start_date') or None
-        scheme.end_date = request.POST.get('end_date') or None
-        scheme.is_active = 'is_active' in request.POST
-        scheme.save()
-        messages.success(request, "Scheme Updated Successfully")
-        return redirect('/admin_manage_schemes/')
-    return render(request, 'ADMIN/edit_scheme.html', {
-        'scheme': scheme,
-        'is_active_checked': 'checked' if scheme.is_active else ''
-    })
+        vids = request.POST.getlist('volunteers')
+        rescue_request.assigned_volunteers.set(vids)
+        rescue_request.status = "Assigned"
+        rescue_request.save()
+        messages.success(request, "Volunteers Assigned to Rescue Operation")
+        return redirect('staff_view_rescue_requests')
+    return render(request, 'STAFF/assign_volunteers.html', {'rescue_request': rescue_request, 'volunteers': volunteers})
 
-@login_required
-def admin_view_news(request):
-    if request.user.userType != 'admin': return redirect('/')
-    news_items = News.objects.all().order_by('-date_posted')
-    return render(request, 'ADMIN/view_news.html', {'news_items': news_items})
-
-@login_required
-def admin_add_news(request):
-    if request.user.userType != 'admin': return redirect('/')
+def staff_update_situation(request, report_id):
+    report = get_object_or_404(EmergencyReport, id=report_id)
     if request.method == "POST":
-        title = request.POST['title']
-        content = request.POST['content']
-        news = News.objects.create(title=title, content=content)
-        if 'image' in request.FILES:
-            news.image = request.FILES['image']
-            news.save()
-        messages.success(request, "News Added Successfully")
-        return redirect('/admin_view_news/')
-    return render(request, 'ADMIN/add_news.html')
+        st = request.POST.get('status')
+        report.status = st
+        report.save()
+        return redirect('staff_view_reports')
+    return render(request, 'STAFF/update_situation.html', {'report': report})
 
-@login_required
-def admin_edit_news(request):
-    if request.user.userType != 'admin': return redirect('/')
-    id = request.GET.get('id')
-    news = get_object_or_404(News, id=id)
+def staff_broadcast_alert(request):
+    staff = Staff.objects.get(loginid=request.user)
     if request.method == "POST":
-        news.title = request.POST['title']
-        news.content = request.POST['content']
-        if 'image' in request.FILES:
-            news.image = request.FILES['image']
-        news.is_active = 'is_active' in request.POST
-        news.save()
-        messages.success(request, "News Updated Successfully")
-        return redirect('/admin_view_news/')
-    
-    context = {
-        'news': news,
-        'is_active_checked': 'checked' if news.is_active else ''
-    }
-    return render(request, 'ADMIN/edit_news.html', context)
+        ti = request.POST.get('title')
+        msg = request.POST.get('message')
+        lv = request.POST.get('level')
+        EmergencyAlert.objects.create(title=ti, message=msg, alert_level=lv, district=staff.district, posted_by=request.user)
+        messages.success(request, "District Alert Broadcasted")
+        return redirect('staff_home')
+    return render(request, 'STAFF/broadcast_alert.html')
 
-@login_required
-def admin_toggle_news_status(request):
-    if request.user.userType != 'admin': return redirect('/')
-    id = request.GET.get('id')
-    news = get_object_or_404(News, id=id)
-    news.is_active = not news.is_active
-    news.save()
-    status = "Published" if news.is_active else "Hidden"
-    messages.success(request, f"News status updated to {status}")
-    return redirect('/admin_view_news/')
+# --- Volunteer Views ---
 
-@login_required
-def admin_total_reports(request):
-    if request.user.userType != 'admin': return redirect('/')
-    
-    report_data = {
-        'total_schemes': Scheme.objects.count(),
-        'total_scheme_apps': SchemeApplication.objects.count(),
-        'scheme_apps_by_status': SchemeApplication.objects.values('status').annotate(count=Count('id')),
-        'total_complaints': Complaint.objects.count(),
-        'complaints_by_status': Complaint.objects.values('status').annotate(count=Count('id')),
-        'total_news': News.objects.count(),
-        'total_customers': Customer.objects.count(),
-        'total_authorities': Authority.objects.count(),
-    }
-    return render(request, 'ADMIN/reports.html', report_data)
+def volunteer_home(request):
+    volunteer = Volunteer.objects.get(loginid=request.user)
+    assignments = RescueRequest.objects.filter(assigned_volunteers=volunteer).order_by('-created_at')
+    return render(request, 'VOLUNTEER/volunteer_home.html', {'volunteer': volunteer, 'assignments': assignments})
 
-@login_required
-def admin_add_notice(request):
-    if request.user.userType != 'admin': return redirect('/')
+def volunteer_view_assignments(request):
+    volunteer = Volunteer.objects.get(loginid=request.user)
+    assignments = RescueRequest.objects.filter(assigned_volunteers=volunteer).order_by('-created_at')
+    return render(request, 'VOLUNTEER/view_assignments.html', {'assignments': assignments})
+
+def volunteer_update_status(request):
+    volunteer = Volunteer.objects.get(loginid=request.user)
     if request.method == "POST":
-        title = request.POST['title']
-        message = request.POST['message']
-        AdminNotice.objects.create(title=title, message=message)
-        messages.success(request, "Notice Issued to Staff")
-        return redirect('/admin_home/')
-    return render(request, 'ADMIN/add_notice.html')
+        st = request.POST.get('status')
+        volunteer.availability_status = st
+        volunteer.save()
+        messages.success(request, "Availability Updated")
+    return redirect('volunteer_home')
 
-# ==========================================
-# AUTHORITY VIEWS
-# ==========================================
+def volunteer_view_emergency_map(request):
+    # Mock map view
+    return render(request, 'VOLUNTEER/view_map.html')
 
-@login_required
-def authority_home(request):
-    if request.user.userType != 'authority': return redirect('/')
-    
-    authority = get_object_or_404(Authority, loginid=request.user)
-    if authority.status != 'active':
-        messages.error(request, f"Account is {authority.status}")
-        return redirect('/login/')
-    
-    assigned_requests = CertificateRequest.objects.filter(assigned_authority=authority)
-    
-    context = {
-        'authority': authority,
-        'pending_requests': assigned_requests.filter(Q(status='Forwarded') | Q(status='Under Review')).count(),
-        'approved_requests': assigned_requests.filter(status='Approved').count(),
-        'completed_requests': assigned_requests.filter(status='Issued').count(),
-    }
-    return render(request, 'AUTHORITY/authority_home.html', context)
+# --- Citizen Views ---
 
-@login_required
-def authority_view_requests(request):
-    if request.user.userType != 'authority': return redirect('/')
-    
-    authority = get_object_or_404(Authority, loginid=request.user)
-    if authority.status != 'active':
-        messages.error(request, f"Account is {authority.status}")
-        return redirect('/login/')
-        
-    requests = CertificateRequest.objects.filter(assigned_authority=authority).order_by('-forwarded_date')
-    
-    return render(request, 'AUTHORITY/view_requests.html', {'requests': requests})
+def citizen_home(request):
+    citizen = Citizen.objects.get(loginid=request.user)
+    alerts = EmergencyAlert.objects.filter(district=citizen.district, is_active=True).order_by('-created_at')
+    return render(request, 'CITIZEN/citizen_home.html', {'citizen': citizen, 'alerts': alerts})
 
-@login_required
-def authority_request_detail(request):
-    if request.user.userType != 'authority': return redirect('/')
-    
-    authority = get_object_or_404(Authority, loginid=request.user)
-    if authority.status != 'active':
-        messages.error(request, f"Account is {authority.status}")
-        return redirect('/login/')
-    
-    req_id = request.GET.get('id')
-    cert_req = get_object_or_404(CertificateRequest, id=req_id)
-    
+def citizen_report_emergency(request):
+    types = EmergencyType.objects.all()
+    citizen = Citizen.objects.get(loginid=request.user)
     if request.method == "POST":
-        action = request.POST.get('action')
-        remarks = request.POST.get('remarks')
+        ty = request.POST.get('type')
+        loc = request.POST.get('location')
+        desc = request.POST.get('description')
+        img = request.FILES.get('image')
         
-        if action == 'approve':
-            cert_req.status = 'Approved'
-        elif action == 'reject':
-            cert_req.status = 'Rejected'
-        elif action == 'review':
-            cert_req.status = 'Under Review'
-            
-        cert_req.remarks = remarks
-        cert_req.processed_date = datetime.now()
-        cert_req.save()
-        
-        messages.success(request, f"Request status updated to {cert_req.status}")
-        return redirect('/authority_view_requests/')
-        
-    return render(request, 'AUTHORITY/request_detail.html', {'cert_request': cert_req})
+        etype = EmergencyType.objects.get(id=ty)
+        EmergencyReport.objects.create(user=citizen, emergency_type=etype, district=citizen.district, location_details=loc, description=desc, image=img)
+        messages.success(request, "Emergency Reported. Authorities are notified.")
+        return redirect('citizen_view_reports')
+    return render(request, 'CITIZEN/report_emergency.html', {'types': types})
 
-@login_required
-def authority_issue_certificate(request):
-    if request.user.userType != 'authority': return redirect('/')
-    
-    authority = get_object_or_404(Authority, loginid=request.user)
-    if authority.status != 'active':
-        messages.error(request, f"Account is {authority.status}")
-        return redirect('/login/')
-    
-    req_id = request.GET.get('id')
-    cert_req = get_object_or_404(CertificateRequest, id=req_id)
-    
+def citizen_view_reports(request):
+    citizen = Citizen.objects.get(loginid=request.user)
+    reports = EmergencyReport.objects.filter(user=citizen).order_by('-reported_at')
+    return render(request, 'CITIZEN/view_reports.html', {'reports': reports})
+
+def citizen_request_rescue(request, report_id):
+    report = get_object_or_404(EmergencyReport, id=report_id)
+    citizen = Citizen.objects.get(loginid=request.user)
     if request.method == "POST":
-        amount = request.POST.get('amount')
-        validity = request.POST.get('validity')
+        cp = request.POST.get('contact_person')
+        ph = request.POST.get('phone')
+        num = request.POST.get('number')
+        pri = request.POST.get('priority')
+        msg = request.POST.get('message')
         
-        if 'certificate_file' in request.FILES:
-            cert_file = request.FILES['certificate_file']
-            
-            # Create Certificate
-            certificate = Certificate.objects.create(
-                certificate_request=cert_req,
-                issued_by=authority,
-                certificate_file=cert_file,
-                service_amount=amount,
-                validity_period=validity
-            )
-            
-            # Update Request Status
-            cert_req.status = 'Issued'
-            cert_req.save()
-            
-            messages.success(request, f"Certificate Issued Successfully. Certificate No: {certificate.certificate_number}")
-            return redirect('/authority_view_requests/')
-        else:
-            messages.error(request, "Please upload certificate file")
-            
-    return render(request, 'AUTHORITY/issue_certificate.html', {'cert_request': cert_req})
+        RescueRequest.objects.create(report=report, user=citizen, district=citizen.district, contact_person=cp, contact_phone=ph, number_of_people=num, priority=pri, message=msg)
+        messages.success(request, "Rescue Request Sent")
+        return redirect('citizen_home')
+    return render(request, 'CITIZEN/request_rescue.html', {'report': report})
 
-@login_required
-def authority_issued_certificates(request):
-    if request.user.userType != 'authority': return redirect('/')
-    
-    authority = get_object_or_404(Authority, loginid=request.user)
-    if authority.status != 'active':
-        messages.error(request, f"Account is {authority.status}")
-        return redirect('/login/')
-        
-    certificates = Certificate.objects.filter(issued_by=authority)
-    
-    return render(request, 'AUTHORITY/issued_certificates.html', {'certificates': certificates})
+def citizen_view_alerts(request):
+    citizen = Citizen.objects.get(loginid=request.user)
+    alerts = EmergencyAlert.objects.filter(district=citizen.district).order_by('-created_at')
+    return render(request, 'CITIZEN/view_alerts.html', {'alerts': alerts})
 
-@login_required
-def staff_view_scheme_applications(request):
-    if request.user.userType != 'authority': return redirect('/')
-    applications = SchemeApplication.objects.all().order_by('-applied_date')
-    return render(request, 'AUTHORITY/scheme_applications.html', {'applications': applications})
-
-@login_required
-def staff_verify_scheme_application(request):
-    if request.user.userType != 'authority': return redirect('/')
-    app_id = request.GET.get('id')
-    application = get_object_or_404(SchemeApplication, id=app_id)
+def citizen_add_feedback(request):
+    citizen = Citizen.objects.get(loginid=request.user)
     if request.method == "POST":
-        status = request.POST['status']
-        remarks = request.POST['remarks']
-        application.status = status
-        application.remarks = remarks
-        if status == 'Verified':
-            application.verified_date = datetime.now()
-        application.save()
-        messages.success(request, f"Application {status} Successfully")
-        return redirect('/staff_view_scheme_applications/')
-    return render(request, 'AUTHORITY/verify_scheme.html', {'application': application})
-
-@login_required
-def staff_view_complaints(request):
-    if request.user.userType != 'authority': return redirect('/')
-    complaints = Complaint.objects.all().order_by('-created_at')
-    return render(request, 'AUTHORITY/view_complaints.html', {'complaints': complaints})
-
-@login_required
-def staff_reply_complaint(request):
-    if request.user.userType != 'authority': return redirect('/')
-    comp_id = request.POST.get('complaint_id')
-    reply = request.POST.get('reply')
-    complaint = get_object_or_404(Complaint, id=comp_id)
-    complaint.reply = reply
-    complaint.status = 'Resolved'
-    complaint.resolved_at = datetime.now()
-    complaint.save()
-    messages.success(request, "Reply sent and complaint marked as Resolved")
-    return redirect('/staff_view_complaints/')
-
-@login_required
-def staff_view_notices(request):
-    if request.user.userType != 'authority': return redirect('/')
-    notices = AdminNotice.objects.all().order_by('-date_posted')
-    return render(request, 'AUTHORITY/view_notices.html', {'notices': notices})
-
-# ==========================================
-# CUSTOMER VIEWS
-# ==========================================
-
-@login_required
-def customer_home(request):
-    if request.user.userType != 'customer': return redirect('/')
-    return render(request, 'CUSTOMER/customer_home.html')
-
-@login_required
-def customer_apply_certificate(request):
-    if request.user.userType != 'customer': return redirect('/')
-    
-    cert_types = CertificateType.objects.filter(is_active=True)
-    customer = Customer.objects.get(loginid=request.user)
-    
-    if request.method == "POST":
-        cert_type_id = request.POST['cert_type']
-        cert_type = get_object_or_404(CertificateType, id=cert_type_id)
-        
-        name = request.POST['name']
-        father = request.POST['father_name']
-        address = request.POST['address']
-        dob = request.POST['dob']
-        details = request.POST['details']
-        
-        req = CertificateRequest.objects.create(
-            customer=customer,
-            certificate_type=cert_type,
-            applicant_name=name,
-            applicant_father_name=father,
-            applicant_address=address,
-            applicant_dob=dob,
-            additional_details=details
-        )
-        
-        if 'doc1' in request.FILES: req.document1 = request.FILES['doc1']
-        if 'doc2' in request.FILES: req.document2 = request.FILES['doc2']
-        if 'doc3' in request.FILES: req.document3 = request.FILES['doc3']
-        req.save()
-        
-        messages.success(request, f"Application Submitted Successfully. Your Application No is: {req.application_number}")
-        return redirect('/customer_applications/')
-        
-    return render(request, 'CUSTOMER/apply_certificate.html', {'cert_types': cert_types, 'customer': customer})
-
-@login_required
-def customer_view_applications(request):
-    if request.user.userType != 'customer': return redirect('/')
-    
-    customer = Customer.objects.get(loginid=request.user)
-    applications = CertificateRequest.objects.filter(customer=customer).order_by('-applied_date')
-    
-    return render(request, 'CUSTOMER/view_applications.html', {'applications': applications})
-
-@login_required
-def customer_application_detail(request):
-    if request.user.userType != 'customer': return redirect('/')
-    
-    app_id = request.GET.get('id')
-    application = get_object_or_404(CertificateRequest, id=app_id)
-    
-    # Check if certificate exists
-    certificate = None
-    if hasattr(application, 'certificate'):
-        certificate = application.certificate
-        
-    return render(request, 'CUSTOMER/application_detail.html', {
-        'application': application,
-        'certificate': certificate
-    })
-
-@login_required
-def customer_payment(request):
-    if request.user.userType != 'customer': return redirect('/')
-    
-    app_id = request.GET.get('id')
-    application = get_object_or_404(CertificateRequest, id=app_id)
-    
-    if request.method == "POST":
-        amount = request.POST['amount']
-        method = request.POST['payment_method']
-        
-        Payment.objects.create(
-            certificate_request=application,
-            amount=amount,
-            payment_method=method,
-            payment_status='Completed',
-            transaction_id=f"TXN{datetime.now().strftime('%Y%m%d%H%M%S')}"
-        )
-        
-        messages.success(request, "Payment Successful")
-        return redirect(f'/customer_application_detail/?id={application.id}')
-        
-    return render(request, 'CUSTOMER/payment.html', {'application': application})
-
-@login_required
-def customer_add_feedback(request):
-    if request.user.userType != 'customer': return redirect('/')
-    
-    customer = Customer.objects.get(loginid=request.user)
-    
-    if request.method == "POST":
-        fb_type = request.POST['type']
-        message = request.POST['message']
-        rating = request.POST['rating']
-        
-        Feedback.objects.create(
-            customer=customer,
-            feedback_type=fb_type,
-            message=message,
-            rating=rating
-        )
-        messages.success(request, "Feedback Submitted Successfully")
-        return redirect('/customer_view_feedback/')
-        
-    return render(request, 'CUSTOMER/add_feedback.html')
-
-@login_required
-def customer_view_feedback(request):
-    if request.user.userType != 'customer': return redirect('/')
-    
-    customer = Customer.objects.get(loginid=request.user)
-    feedbacks = Feedback.objects.filter(customer=customer).order_by('-created_at')
-    
-    return render(request, 'CUSTOMER/view_feedback.html', {'feedbacks': feedbacks})
-
-@login_required
-def customer_view_schemes(request):
-    if request.user.userType != 'customer': return redirect('/')
-    schemes = Scheme.objects.filter(is_active=True)
-    today = timezone.now().date()
-    
-    # Calculate status in python to avoid template tag issues
-    for s in schemes:
-        if s.start_date and today < s.start_date:
-            s.app_status = 'upcoming'
-        elif s.end_date and today > s.end_date:
-            s.app_status = 'ended'
-        else:
-            s.app_status = 'open'
-            
-    return render(request, 'CUSTOMER/view_schemes.html', {'schemes': schemes, 'today': today})
-
-@login_required
-def customer_apply_scheme(request):
-    if request.user.userType != 'customer': return redirect('/')
-    scheme_id = request.GET.get('id')
-    scheme = get_object_or_404(Scheme, id=scheme_id)
-    customer = Customer.objects.get(loginid=request.user)
-    
-    today = timezone.now().date()
-    
-    # Date Validation
-    if scheme.start_date and today < scheme.start_date:
-        messages.error(request, f"Applications for {scheme.name} haven't started yet. Opening on {scheme.start_date}")
-        return redirect('/customer_view_schemes/')
-    
-    if scheme.end_date and today > scheme.end_date:
-        messages.error(request, f"Applications for {scheme.name} ended on {scheme.end_date}")
-        return redirect('/customer_view_schemes/')
-    
-    if request.method == "POST":
-        app = SchemeApplication.objects.create(
-            scheme=scheme,
-            customer=customer,
-        )
-        if 'documents' in request.FILES:
-            app.documents = request.FILES['documents']
-            app.save()
-        messages.success(request, f"Applied for {scheme.name} successfully. App No: {app.application_number}")
-        return redirect('/customer_scheme_status/')
-    return render(request, 'CUSTOMER/apply_scheme.html', {'scheme': scheme})
-
-@login_required
-def customer_scheme_status(request):
-    if request.user.userType != 'customer': return redirect('/')
-    customer = Customer.objects.get(loginid=request.user)
-    applications = SchemeApplication.objects.filter(customer=customer).order_by('-applied_date')
-    return render(request, 'CUSTOMER/my_schemes.html', {'applications': applications})
-
-@login_required
-def customer_scheme_application_detail(request):
-    if request.user.userType != 'customer': return redirect('/')
-    app_id = request.GET.get('id')
-    application = get_object_or_404(SchemeApplication, id=app_id)
-    return render(request, 'CUSTOMER/scheme_application_detail.html', {'application': application})
-
-@login_required
-def customer_add_complaint(request):
-    if request.user.userType != 'customer': return redirect('/')
-    if request.method == "POST":
-        customer = Customer.objects.get(loginid=request.user)
-        subject = request.POST['subject']
-        desc = request.POST['description']
-        Complaint.objects.create(customer=customer, subject=subject, description=desc)
-        messages.success(request, "Complaint submitted successfully")
-        return redirect('/customer_view_complaints/')
-    return render(request, 'CUSTOMER/add_complaint.html')
-
-@login_required
-def customer_view_complaints(request):
-    if request.user.userType != 'customer': return redirect('/')
-    customer = Customer.objects.get(loginid=request.user)
-    complaints = Complaint.objects.filter(customer=customer).order_by('-created_at')
-    return render(request, 'CUSTOMER/view_complaints.html', {'complaints': complaints})
-
-@login_required
-def customer_view_news(request):
-    if request.user.userType != 'customer': return redirect('/')
-    news_items = News.objects.filter(is_active=True).order_by('-date_posted')
-    return render(request, 'CUSTOMER/view_news.html', {'news_items': news_items})
+        sub = request.POST.get('subject')
+        msg = request.POST.get('message')
+        Feedback.objects.create(user=citizen, subject=sub, message=msg)
+        messages.success(request, "Feedback Submitted")
+        return redirect('citizen_home')
+    return render(request, 'CITIZEN/add_feedback.html')
