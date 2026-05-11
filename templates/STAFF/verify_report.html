@@ -1,0 +1,62 @@
+{% extends 'STAFF/commen.html' %}
+
+{% block staff_body %}
+<div class="page-header">
+    <h1>Verify & Process Report</h1>
+    <a href="/staff_view_reports/" class="btn btn-sm" style="background: rgba(255,255,255,0.1); color: white;"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 25px;">
+    <div>
+        <div class="card">
+            <h3>Report Details</h3>
+            <div style="margin-top: 20px;">
+                <p style="color: var(--text-dim); margin-bottom: 5px;">Emergency Type:</p>
+                <p><strong>{{ report.emergency_type.name }}</strong></p>
+                
+                <p style="color: var(--text-dim); margin-top: 15px; margin-bottom: 5px;">Location:</p>
+                <p><strong>{{ report.location_details }}</strong></p>
+                
+                <p style="color: var(--text-dim); margin-top: 15px; margin-bottom: 5px;">Description:</p>
+                <p>{{ report.description }}</p>
+                
+                <p style="color: var(--text-dim); margin-top: 15px; margin-bottom: 5px;">Reported By:</p>
+                <p>{{ report.user.name }} ({{ report.user.phone }})</p>
+            </div>
+            {% if report.image %}
+            <div style="margin-top: 20px;">
+                <p style="color: var(--text-dim); margin-bottom: 8px;">Attachment:</p>
+                <img src="{{ report.image.url }}" style="width: 100%; border-radius: 10px;" alt="Emergency Image">
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div>
+        <div class="card">
+            <h3>Verification Actions</h3>
+            <form method="POST" style="margin-top: 20px;">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Updated Status</label>
+                    <select name="status" class="form-control" required>
+                        <option value="Verified" {% if report.status == 'Verified' %}selected{% endif %}>Verified (Waiting for Action)</option>
+                        <option value="Active" {% if report.status == 'Active' %}selected{% endif %}>Active (Rescue Operations Ongoing)</option>
+                        <option value="Resolved" {% if report.status == 'Resolved' %}selected{% endif %}>Resolved (Situation Normal)</option>
+                        <option value="Fake" {% if report.status == 'Fake' %}selected{% endif %}>Fake Report (Mark as Invalid)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Official Remarks / Instructions</label>
+                    <textarea name="remarks" class="form-control" rows="8" required placeholder="Enter verification notes or instructions for rescue teams...">{{ report.remarks }}</textarea>
+                </div>
+                <button type="submit" class="btn-submit">Submit Verification</button>
+            </form>
+        </div>
+        
+        <div class="card" style="border-left-color: var(--emergency);">
+            <p><i class="fas fa-info-circle"></i> Once verified, this report will be visible to rescue coordinators and assigned volunteers if necessary.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

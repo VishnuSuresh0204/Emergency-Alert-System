@@ -1,0 +1,53 @@
+{% extends 'STAFF/commen.html' %}
+
+{% block staff_body %}
+<div class="page-header">
+    <h1>District Emergency Reports</h1>
+</div>
+
+<div class="card">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Reported</th>
+                    <th>Citizen</th>
+                    <th>Type</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reports %}
+                <tr>
+                    <td>{{ r.reported_at|date:"d M, H:i" }}</td>
+                    <td><strong>{{ r.user.name }}</strong></td>
+                    <td><span style="color: var(--emergency);">{{ r.emergency_type.name }}</span></td>
+                    <td>{{ r.location_details }}</td>
+                    <td>
+                        <span class="status-badge 
+                            {% if r.status == 'Pending' %}badge-pending
+                            {% elif r.status == 'Verified' or r.status == 'Active' %}badge-verified
+                            {% elif r.status == 'Resolved' %}badge-resolved
+                            {% else %}badge-fake{% endif %}">
+                            {{ r.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-links">
+                            <a href="/staff_verify_report?id={{ r.id }}" class="btn btn-sm btn-primary"><i class="fas fa-check-double"></i> Verify</a>
+                            <a href="/staff_update_situation?id={{ r.id }}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i> Update</a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-dim);">No reports found in your district.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

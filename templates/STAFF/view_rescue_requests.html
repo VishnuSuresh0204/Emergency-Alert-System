@@ -1,0 +1,65 @@
+{% extends 'STAFF/commen.html' %}
+
+{% block staff_body %}
+<div class="page-header">
+    <h1>Rescue Requests</h1>
+</div>
+
+<div class="card">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Created</th>
+                    <th>Contact Person</th>
+                    <th>Priority</th>
+                    <th>People</th>
+                    <th>Message</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reqs %}
+                <tr>
+                    <td>{{ r.created_at|date:"d M, H:i" }}</td>
+                    <td>
+                        <strong>{{ r.contact_person }}</strong>
+                        <div style="font-size: 0.8rem; color: var(--text-dim);">{{ r.contact_phone }}</div>
+                    </td>
+                    <td>
+                        <span class="status-badge 
+                            {% if r.priority == 'High' %}badge-high
+                            {% elif r.priority == 'Medium' %}badge-medium
+                            {% else %}badge-low{% endif %}">
+                            {{ r.priority }}
+                        </span>
+                    </td>
+                    <td>{{ r.number_of_people }}</td>
+                    <td style="max-width: 200px; font-size: 0.85rem;">{{ r.message }}</td>
+                    <td>
+                        <span class="status-badge 
+                            {% if r.status == 'Pending' %}badge-pending
+                            {% elif r.status == 'Assigned' %}badge-assigned
+                            {% else %}badge-rescued{% endif %}">
+                            {{ r.status }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if r.status == 'Pending' %}
+                        <a href="/staff_assign_volunteers?id={{ r.id }}" class="btn btn-sm btn-primary">Assign Volunteers</a>
+                        {% else %}
+                        <a href="/staff_assign_volunteers?id={{ r.id }}" class="btn btn-sm btn-warning">Modify Team</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-dim);">No rescue requests in your district.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

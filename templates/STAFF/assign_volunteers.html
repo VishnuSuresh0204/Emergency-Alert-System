@@ -1,0 +1,50 @@
+{% extends 'STAFF/commen.html' %}
+
+{% block staff_body %}
+<div class="page-header">
+    <h1>Assign Volunteer Team</h1>
+    <a href="/staff_view_rescue_requests/" class="btn btn-sm" style="background: rgba(255,255,255,0.1); color: white;"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 25px;">
+    <div>
+        <div class="card">
+            <h3>Mission Scope</h3>
+            <div style="margin-top: 20px;">
+                <p style="color: var(--text-dim); margin-bottom: 5px;">Contact:</p>
+                <p><strong>{{ rescue_request.contact_person }}</strong></p>
+                
+                <p style="color: var(--text-dim); margin-top: 15px; margin-bottom: 5px;">Priority:</p>
+                <p><span class="status-badge {% if rescue_request.priority == 'High' %}badge-high{% else %}badge-medium{% endif %}">{{ rescue_request.priority }}</span></p>
+                
+                <p style="color: var(--text-dim); margin-top: 15px; margin-bottom: 5px;">Message:</p>
+                <p>{{ rescue_request.message }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div>
+        <div class="card">
+            <h3>Available Volunteers ({{ volunteers.count }})</h3>
+            <form method="POST" style="margin-top: 20px;">
+                {% csrf_token %}
+                <div style="max-height: 400px; overflow-y: auto; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px;">
+                    {% for v in volunteers %}
+                    <div style="display: flex; align-items: center; gap: 15px; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <input type="checkbox" name="volunteers" value="{{ v.id }}" id="v{{ v.id }}" 
+                            {% if v in rescue_request.assigned_volunteers.all %}checked{% endif %}>
+                        <label for="v{{ v.id }}" style="flex: 1; cursor: pointer;">
+                            <strong>{{ v.name }}</strong>
+                            <div style="font-size: 0.8rem; color: var(--text-dim);">Skills: {{ v.skills|truncatechars:40 }}</div>
+                        </label>
+                    </div>
+                    {% empty %}
+                    <p style="padding: 20px; text-align: center; color: var(--text-dim);">No available volunteers in this district.</p>
+                    {% endfor %}
+                </div>
+                <button type="submit" class="btn-submit" {% if volunteers.count == 0 %}disabled{% endif %}>Dispatch Selected Team</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

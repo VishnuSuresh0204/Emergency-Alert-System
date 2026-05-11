@@ -1,34 +1,35 @@
-{% extends 'base.html' %}
+{% extends 'STAFF/commen.html' %}
 
-{% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+{% block staff_body %}
+<div class="page-header">
     <div>
         <h1>Staff Control Panel</h1>
-        <p style="color: var(--text-dim);">Operating in: <strong>{{ staff.district.name }}</strong></p>
+        <p style="color: var(--text-dim); margin-top: 5px;"><i class="fas fa-map-location-dot"></i> Operating in: <strong>{{ staff.district.name }}</strong></p>
     </div>
-    <a href="/staff_broadcast_alert/" class="btn-emergency" style="text-decoration: none;">
-        Broadcast Alert
-    </a>
+    <a href="/staff_broadcast_alert/" class="btn btn-emergency"><i class="fas fa-tower-broadcast"></i> Broadcast District Alert</a>
 </div>
 
 <div class="dashboard-grid">
     <div class="stat-card">
-        <span class="stat-label">Assigned District</span>
-        <span class="stat-value">{{ staff.district.name }}</span>
+        <span class="stat-label">Your District</span>
+        <span class="stat-value" style="font-size: 1.5rem;">{{ staff.district.name }}</span>
     </div>
     <div class="stat-card" style="border-left-color: #3b82f6;">
         <span class="stat-label">Recent Reports</span>
         <span class="stat-value">{{ reports.count }}</span>
-        <a href="/staff_view_reports/" style="color: #3b82f6; font-size: 0.8rem; text-decoration: none;">View All →</a>
     </div>
 </div>
 
 <div class="card">
-    <h3><i class="fas fa-clock-rotate-left" style="color: var(--primary);"></i> Recent Reports</h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3><i class="fas fa-clock-rotate-left" style="color: var(--emergency);"></i> Recent Reports in District</h3>
+        <a href="/staff_view_reports/" style="color: var(--primary); text-decoration: none; font-size: 0.85rem;">View All Reports →</a>
+    </div>
     <div class="table-container">
         <table>
             <thead>
                 <tr>
+                    <th>Time</th>
                     <th>Type</th>
                     <th>Location</th>
                     <th>Status</th>
@@ -36,12 +37,27 @@
                 </tr>
             </thead>
             <tbody>
-                {% for report in reports %}
+                {% for r in reports %}
                 <tr>
-                    <td>{{ report.emergency_type.name }}</td>
-                    <td>{{ report.location_details }}</td>
-                    <td>{{ report.status }}</td>
-                    <td><a href="/staff_verify_report/{{ report.id }}/">Process</a></td>
+                    <td>{{ r.reported_at|timesince }} ago</td>
+                    <td><strong style="color: var(--emergency);">{{ r.emergency_type.name }}</strong></td>
+                    <td>{{ r.location_details }}</td>
+                    <td>
+                        <span class="status-badge 
+                            {% if r.status == 'Pending' %}badge-pending
+                            {% elif r.status == 'Verified' or r.status == 'Active' %}badge-verified
+                            {% elif r.status == 'Resolved' %}badge-resolved
+                            {% else %}badge-fake{% endif %}">
+                            {{ r.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="/staff_verify_report?id={{ r.id }}" class="btn btn-sm btn-primary">Process</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 30px; color: var(--text-dim);">No recent reports in your district.</td>
                 </tr>
                 {% endfor %}
             </tbody>
