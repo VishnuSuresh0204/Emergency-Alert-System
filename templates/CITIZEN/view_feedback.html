@@ -1,0 +1,46 @@
+{% extends 'CITIZEN/commen.html' %}
+
+{% block citizen_body %}
+<div class="page-header">
+    <h1>My Feedbacks</h1>
+    <a href="/citizen_add_feedback/" class="btn btn-primary"><i class="fas fa-plus"></i> New Feedback</a>
+</div>
+
+<div class="card">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Subject</th>
+                    <th>Message</th>
+                    <th>Authority Reply</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in feedbacks %}
+                <tr>
+                    <td>{{ f.created_at|date:"d M, Y" }}</td>
+                    <td><strong>{{ f.subject }}</strong></td>
+                    <td style="max-width: 300px;">{{ f.message }}</td>
+                    <td style="max-width: 300px;">
+                        {% if f.admin_reply %}
+                        <div style="background: rgba(16, 185, 129, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #10b981;">
+                            <p style="font-size: 0.85rem; color: #10b981; font-weight: 600; margin-bottom: 5px;"><i class="fas fa-reply"></i> Admin Response:</p>
+                            <p style="font-size: 0.85rem; color: var(--text-light);">{{ f.admin_reply }}</p>
+                        </div>
+                        {% else %}
+                        <span style="color: var(--text-dim); font-size: 0.85rem; font-style: italic;">Awaiting response...</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-dim);">No feedback history.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'CITIZEN/commen.html' %}
+
+{% block citizen_body %}
+<div class="page-header">
+    <h1>Report an Emergency</h1>
+    <a href="/citizen_home/" class="btn btn-sm" style="background: rgba(255,255,255,0.1); color: white;"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<div style="max-width: 800px; margin: 0 auto;">
+    <div class="card" style="border-top: 5px solid var(--emergency);">
+        <p style="color: var(--text-dim); margin-bottom: 25px;">Please provide accurate details. Misreporting may lead to legal action.</p>
+        
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label>Emergency Category</label>
+                    <select name="type" class="form-control" required>
+                        <option value="">Select Category</option>
+                        {% for t in types %}
+                        <option value="{{ t.id }}">{{ t.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Specific Location / Landmark</label>
+                    <input type="text" name="location" class="form-control" required placeholder="e.g. Near City Hospital, 2nd Cross">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Situation Description</label>
+                <textarea name="description" class="form-control" rows="5" required placeholder="Describe what is happening and the immediate danger..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Incident Photo (Optional but Recommended)</label>
+                <input type="file" name="image" class="form-control">
+            </div>
+            
+            <div style="background: rgba(211, 47, 47, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 25px; border: 1px dashed var(--emergency);">
+                <p style="color: var(--emergency); font-size: 0.85rem; margin: 0;"><i class="fas fa-shield-halved"></i> Your report will be immediately forwarded to the district emergency response team.</p>
+            </div>
+            
+            <button type="submit" class="btn-submit" style="background: var(--emergency);">SUBMIT EMERGENCY REPORT</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

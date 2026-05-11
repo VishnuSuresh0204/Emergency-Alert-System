@@ -1,0 +1,62 @@
+{% extends 'CITIZEN/commen.html' %}
+
+{% block citizen_body %}
+<div class="page-header">
+    <h1>My Emergency Reports</h1>
+</div>
+
+<div class="card">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date Reported</th>
+                    <th>Type</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Staff Remarks</th>
+                    <th>Rescue</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reports %}
+                <tr>
+                    <td>{{ r.reported_at|date:"d M, H:i" }}</td>
+                    <td><strong>{{ r.emergency_type.name }}</strong></td>
+                    <td>{{ r.location_details }}</td>
+                    <td>
+                        <span class="status-badge 
+                            {% if r.status == 'Pending' %}badge-pending
+                            {% elif r.status == 'Verified' or r.status == 'Active' %}badge-verified
+                            {% elif r.status == 'Resolved' %}badge-resolved
+                            {% else %}badge-fake{% endif %}">
+                            {{ r.status }}
+                        </span>
+                    </td>
+                    <td style="max-width: 250px; font-size: 0.85rem; color: var(--text-dim);">
+                        {% if r.remarks %}
+                        {{ r.remarks }}
+                        {% else %}
+                        <span style="font-style: italic;">Processing...</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if r.status == 'Verified' or r.status == 'Active' %}
+                        <a href="/citizen_request_rescue?id={{ r.id }}" class="btn btn-sm btn-primary"><i class="fas fa-truck-medical"></i> Request Rescue</a>
+                        {% elif r.status == 'Pending' %}
+                        <small style="color: var(--text-dim);">Wait for verification</small>
+                        {% else %}
+                        <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-dim);">You haven't reported any emergencies yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

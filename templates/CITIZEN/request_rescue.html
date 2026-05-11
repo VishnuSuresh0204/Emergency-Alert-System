@@ -1,0 +1,57 @@
+{% extends 'CITIZEN/commen.html' %}
+
+{% block citizen_body %}
+<div class="page-header">
+    <h1>Request Urgent Rescue</h1>
+    <a href="/citizen_view_reports/" class="btn btn-sm" style="background: rgba(255,255,255,0.1); color: white;"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<div style="max-width: 800px; margin: 0 auto;">
+    <div class="card" style="border-top: 5px solid var(--primary);">
+        <div style="margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <h4 style="color: var(--text-dim); margin-bottom: 5px;">Linked Emergency:</h4>
+            <p><strong>{{ report.emergency_type.name }}</strong> at <strong>{{ report.location_details }}</strong></p>
+        </div>
+        
+        <form method="POST">
+            {% csrf_token %}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label>Contact Person at Site</label>
+                    <input type="text" name="contact_person" class="form-control" required placeholder="Name of the person to contact">
+                </div>
+                <div class="form-group">
+                    <label>Emergency Phone Number</label>
+                    <input type="text" name="phone" class="form-control" required placeholder="Phone number for rescue team">
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label>Number of People in Danger</label>
+                    <input type="number" name="number" class="form-control" required min="1" placeholder="Approx count">
+                </div>
+                <div class="form-group">
+                    <label>Rescue Priority</label>
+                    <select name="priority" class="form-control" required>
+                        <option value="High">High (Immediate Life Threat)</option>
+                        <option value="Medium">Medium (Stranded but Stable)</option>
+                        <option value="Low">Low (Needs evacuation assistance)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Detailed Message for Rescue Team</label>
+                <textarea name="message" class="form-control" rows="5" required placeholder="Specific needs? Medical requirements? Trapped location details?"></textarea>
+            </div>
+            
+            <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 25px; border: 1px dashed #3b82f6;">
+                <p style="color: #3b82f6; font-size: 0.85rem; margin: 0;"><i class="fas fa-truck-medical"></i> Staff will assign available volunteers to your location based on priority.</p>
+            </div>
+            
+            <button type="submit" class="btn-submit">DISPATCH RESCUE REQUEST</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
