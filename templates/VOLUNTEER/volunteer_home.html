@@ -1,44 +1,72 @@
-{% extends 'base.html' %}
+{% extends 'VOLUNTEER/commen.html' %}
 
-{% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+{% block volunteer_body %}
+<div class="page-header">
     <div>
-        <h1>Volunteer Portal</h1>
-        <p style="color: var(--text-dim);">Status: <span style="color: #10b981;">{{ volunteer.availability_status }}</span></p>
+        <h1>Volunteer Mission Control</h1>
+        <p style="color: var(--text-dim); margin-top: 5px;"><i class="fas fa-location-dot"></i> Service District: <strong>{{ volunteer.district.name }}</strong></p>
+    </div>
+    <div class="card" style="padding: 10px 20px; margin-bottom: 0; display: flex; align-items: center; gap: 15px;">
+        <span style="font-size: 0.85rem; color: var(--text-dim);">My Availability:</span>
+        <form action="/volunteer_update_status/" method="POST" style="display: flex; gap: 10px;">
+            {% csrf_token %}
+            <select name="status" class="form-control" style="padding: 5px 10px; font-size: 0.85rem;" onchange="this.form.submit()">
+                <option value="Available" {% if volunteer.availability_status == 'Available' %}selected{% endif %}>Available</option>
+                <option value="On Mission" {% if volunteer.availability_status == 'On Mission' %}selected{% endif %}>On Mission</option>
+                <option value="Unavailable" {% if volunteer.availability_status == 'Unavailable' %}selected{% endif %}>Unavailable</option>
+            </select>
+        </form>
     </div>
 </div>
 
 <div class="dashboard-grid">
     <div class="stat-card">
-        <span class="stat-label">Assigned District</span>
-        <span class="stat-value">{{ volunteer.district.name }}</span>
+        <span class="stat-label">Assigned Missions</span>
+        <span class="stat-value">{{ assignments.count }}</span>
     </div>
     <div class="stat-card" style="border-left-color: #3b82f6;">
-        <span class="stat-label">Missions</span>
-        <span class="stat-value">{{ assignments.count }}</span>
+        <span class="stat-label">Response District</span>
+        <span class="stat-value" style="font-size: 1.5rem;">{{ volunteer.district.name }}</span>
     </div>
 </div>
 
 <div class="card">
-    <h3>Current Missions</h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3><i class="fas fa-clipboard-check" style="color: var(--primary);"></i> Active Assignments</h3>
+        <a href="/volunteer_view_assignments/" style="color: var(--primary); text-decoration: none; font-size: 0.85rem;">View All Missions →</a>
+    </div>
     <div class="table-container">
         <table>
             <thead>
                 <tr>
+                    <th>Mission ID</th>
                     <th>Location</th>
                     <th>Priority</th>
-                    <th>Action</th>
+                    <th>Contact</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
-                {% for mission in assignments %}
+                {% for a in assignments %}
                 <tr>
-                    <td>{{ mission.report.location_details }}</td>
-                    <td>{{ mission.priority }}</td>
-                    <td><a href="#">View Details</a></td>
+                    <td>#REQ{{ a.id }}</td>
+                    <td>{{ a.district.name }} - {{ a.contact_person }}</td>
+                    <td>
+                        <span class="status-badge {% if a.priority == 'High' %}badge-high{% else %}badge-medium{% endif %}">
+                            {{ a.priority }}
+                        </span>
+                    </td>
+                    <td>{{ a.contact_phone }}</td>
+                    <td>
+                        <span class="status-badge {% if a.status == 'Pending' %}badge-pending{% elif a.status == 'Assigned' %}badge-assigned{% else %}badge-rescued{% endif %}">
+                            {{ a.status }}
+                        </span>
+                    </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="3">No active missions.</td></tr>
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 30px; color: var(--text-dim);">No missions assigned to you yet. Stay alert!</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>

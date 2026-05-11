@@ -1,0 +1,61 @@
+{% extends 'VOLUNTEER/commen.html' %}
+
+{% block volunteer_body %}
+<div class="page-header">
+    <h1>Mission Assignments</h1>
+</div>
+
+<div class="card">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Contact Person</th>
+                    <th>Location</th>
+                    <th>Priority</th>
+                    <th>Message</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in assignments %}
+                <tr>
+                    <td>{{ a.created_at|date:"d M, H:i" }}</td>
+                    <td>
+                        <strong>{{ a.contact_person }}</strong>
+                        <div style="font-size: 0.8rem; color: var(--text-dim);">{{ a.contact_phone }}</div>
+                    </td>
+                    <td>{{ a.district.name }}</td>
+                    <td>
+                        <span class="status-badge {% if a.priority == 'High' %}badge-high{% else %}badge-medium{% endif %}">
+                            {{ a.priority }}
+                        </span>
+                    </td>
+                    <td style="max-width: 200px; font-size: 0.85rem;">{{ a.message }}</td>
+                    <td>
+                        <span class="status-badge {% if a.status == 'Pending' %}badge-pending{% elif a.status == 'Assigned' %}badge-assigned{% else %}badge-rescued{% endif %}">
+                            {{ a.status }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if a.status == 'Assigned' %}
+                        <form action="/volunteer_update_rescue?id={{ a.id }}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="status" value="Rescued">
+                            <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('Confirm mission completion?')">Mark Rescued</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-dim);">No mission history found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
