@@ -1,57 +1,156 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block content %}
-<div style="max-width: 600px; margin: 3rem auto;">
-    <div class="card">
-        <h2 style="color: var(--accent);"><i class="fas fa-hand-holding-heart" style="margin-right: 15px;"></i>Join as Volunteer</h2>
-        <p style="color: var(--text-dim); margin-bottom: 2rem;">Support your community during emergencies. Admin approval is required for all volunteers.</p>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volunteer Registration - District Rescue</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-light: #f8fafc;
+            --text-dim: #94a3b8;
+            --transition: all 0.3s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+        body {
+            background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.05), transparent), 
+                        var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .reg-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            padding: 50px;
+            border-radius: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            width: 100%;
+            max-width: 750px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .header { text-align: center; margin-bottom: 40px; }
+        .logo {
+            font-size: 1.8rem; font-weight: 700; color: var(--primary); text-decoration: none;
+            display: inline-flex; align-items: center; gap: 12px; margin-bottom: 20px;
+        }
+        .logo span { color: var(--text-light); }
+        h2 { font-size: 2rem; font-weight: 800; margin-bottom: 10px; }
+        p.subtitle { color: var(--text-dim); }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+
+        .form-group { margin-bottom: 25px; }
+        .form-group label { display: block; margin-bottom: 10px; font-size: 0.9rem; color: var(--text-dim); font-weight: 500; }
+        
+        .form-control {
+            width: 100%; padding: 14px 16px; background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;
+            color: white; font-size: 0.95rem; transition: var(--transition);
+        }
+
+        .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15); }
+        select.form-control { appearance: auto; }
+
+        .btn-submit {
+            width: 100%; padding: 18px; background: var(--primary); color: white;
+            border: none; border-radius: 12px; font-size: 1.1rem; font-weight: 700;
+            cursor: pointer; margin-top: 20px; transition: var(--transition);
+        }
+        .btn-submit:hover { background: var(--primary-dark); transform: translateY(-3px); box-shadow: 0 15px 30px rgba(16, 185, 129, 0.3); }
+
+        .footer-link { text-align: center; margin-top: 30px; font-size: 0.95rem; color: var(--text-dim); }
+        .footer-link a { color: var(--primary); text-decoration: none; font-weight: 600; }
+
+        @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+
+<body>
+    <div class="reg-card">
+        <div class="header">
+            <a href="/" class="logo">
+                <i class="fas fa-hand-holding-heart"></i>
+                <span>Volunteer</span>Hub
+            </a>
+            <h2>Join the Rescue Force</h2>
+            <p class="subtitle">Support your community during critical emergencies</p>
+        </div>
+
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0;">
+            <div class="form-grid">
                 <div class="form-group">
                     <label>Full Name</label>
-                    <input type="text" name="name" required>
+                    <input type="text" name="name" class="form-control" placeholder="Jane Smith" required>
                 </div>
                 <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" name="email" required>
+                    <label>Email Address</label>
+                    <input type="email" name="email" class="form-control" placeholder="jane@example.com" required>
                 </div>
             </div>
-            <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0;">
+
+            <div class="form-grid">
                 <div class="form-group">
                     <label>Phone Number</label>
-                    <input type="text" name="phone" required>
+                    <input type="text" name="phone" class="form-control" placeholder="+91 ..." required>
                 </div>
                 <div class="form-group">
-                    <label>Assigned District</label>
-                    <select name="district" required>
-                        <option value="">Select district to serve</option>
+                    <label>Service District</label>
+                    <select name="district" class="form-control" required>
+                        <option value="">Select District to Serve</option>
                         {% for d in districts %}
                         <option value="{{ d.id }}">{{ d.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
             </div>
+
             <div class="form-group">
                 <label>Skills & Qualifications</label>
-                <textarea name="skills" required rows="3" placeholder="e.g. First Aid Certified, Swimming, Driving, Electrical Work"></textarea>
+                <textarea name="skills" class="form-control" rows="3" placeholder="First Aid, Swimming, Driving, Electrical Work, etc." required></textarea>
             </div>
-            <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0;">
+
+            <div class="form-grid">
                 <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" name="username" required>
+                    <label>Choose Username</label>
+                    <input type="text" name="username" class="form-control" placeholder="volunteer_user" required>
                 </div>
                 <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" name="password" required>
+                    <label>Create Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="••••••••" required>
                 </div>
             </div>
+
             <div class="form-group">
-                <label>Profile/ID Document Photo</label>
-                <input type="file" name="profile_pic">
+                <label>Identity Proof / Profile Photo</label>
+                <input type="file" name="profile_pic" class="form-control" style="padding: 10px;">
             </div>
-            <button type="submit" style="background: var(--accent);">Submit Volunteer Application</button>
+
+            <div style="background: rgba(16, 185, 129, 0.1); padding: 15px; border-radius: 12px; margin-bottom: 25px; border: 1px dashed var(--primary); font-size: 0.85rem; color: var(--primary);">
+                <i class="fas fa-info-circle" style="margin-right: 8px;"></i> Your application will be reviewed by district administrators for approval.
+            </div>
+
+            <button type="submit" class="btn-submit">Submit Volunteer Application</button>
         </form>
+
+        <div class="footer-link">
+            <p>Back to <a href="/login/">Sign In</a></p>
+        </div>
     </div>
-</div>
-{% endblock %}
+</body>
+
+</html>
