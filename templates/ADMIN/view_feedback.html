@@ -1,0 +1,48 @@
+{% extends 'ADMIN/commen.html' %}
+
+{% block admin_body %}
+<div class="page-header">
+    <h1>Citizen Feedback</h1>
+</div>
+
+<div class="card">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Citizen</th>
+                    <th>Subject</th>
+                    <th>Message</th>
+                    <th>Admin Reply</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in feedbacks %}
+                <tr>
+                    <td>{{ f.created_at|date:"d M, Y" }}</td>
+                    <td><strong>{{ f.user.name }}</strong></td>
+                    <td>{{ f.subject }}</td>
+                    <td style="max-width: 250px;">{{ f.message }}</td>
+                    <td style="max-width: 250px; color: var(--primary);">
+                        {% if f.admin_reply %}
+                        {{ f.admin_reply }}
+                        {% else %}
+                        <span style="color: var(--text-dim); font-style: italic;">No reply yet</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="/admin_reply_feedback?id={{ f.id }}" class="btn btn-sm btn-primary">Reply</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-dim);">No feedback received yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

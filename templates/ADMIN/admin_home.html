@@ -1,33 +1,43 @@
-{% extends 'base.html' %}
+{% extends 'ADMIN/commen.html' %}
 
-{% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-    <h1>Admin Central Command</h1>
-    <div style="display: flex; gap: 10px;">
-        <a href="/admin_send_alert/" class="btn-emergency" style="text-decoration: none;">Send Emergency Alert</a>
-    </div>
+{% block admin_body %}
+<div class="page-header">
+    <h1>Command Center Overview</h1>
+    <a href="/admin_send_alert/" class="btn btn-primary"><i class="fas fa-tower-broadcast"></i> Issue District Alert</a>
 </div>
 
 <div class="dashboard-grid">
     <div class="stat-card">
-        <span class="stat-label">Districts Managed</span>
+        <span class="stat-label">Districts</span>
         <span class="stat-value">{{ districts }}</span>
-        <a href="/admin_manage_districts/" style="color: var(--primary); font-size: 0.8rem; text-decoration: none;">Manage Districts →</a>
     </div>
     <div class="stat-card" style="border-left-color: #3b82f6;">
-        <span class="stat-label">Total Staff</span>
+        <span class="stat-label">Response Staff</span>
         <span class="stat-value">{{ staff }}</span>
-        <a href="/admin_manage_staff/" style="color: #3b82f6; font-size: 0.8rem; text-decoration: none;">Manage Personnel →</a>
     </div>
     <div class="stat-card" style="border-left-color: #10b981;">
-        <span class="stat-label">Pending Volunteers</span>
+        <span class="stat-label">Volunteers</span>
         <span class="stat-value">{{ volunteers }}</span>
-        <a href="/admin_approve_volunteers/" style="color: #10b981; font-size: 0.8rem; text-decoration: none;">Review Applications →</a>
     </div>
     <div class="stat-card" style="border-left-color: #f59e0b;">
+        <span class="stat-label">Active Alerts</span>
+        <span class="stat-value">{{ active_alerts }}</span>
+    </div>
+    <div class="stat-card" style="border-left-color: #ef4444;">
         <span class="stat-label">Pending Reports</span>
         <span class="stat-value">{{ pending_reports }}</span>
-        <a href="/admin_view_all_reports/" style="color: #f59e0b; font-size: 0.8rem; text-decoration: none;">View Reports →</a>
+    </div>
+</div>
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3>Quick Actions</h3>
+    </div>
+    <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+        <a href="/admin_add_staff/" class="btn btn-success" style="justify-content: center;"><i class="fas fa-user-plus"></i> Add Staff</a>
+        <a href="/admin_add_district/" class="btn btn-primary" style="justify-content: center;"><i class="fas fa-plus"></i> Add District</a>
+        <a href="/admin_add_emergency_type/" class="btn btn-warning" style="justify-content: center;"><i class="fas fa-biohazard"></i> Add Emergency Type</a>
+        <a href="/admin_approve_volunteers/" class="btn btn-primary" style="justify-content: center; background: #6366f1;"><i class="fas fa-check-to-slot"></i> Review Volunteers</a>
     </div>
 </div>
 {% endblock %}

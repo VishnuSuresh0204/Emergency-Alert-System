@@ -1,0 +1,50 @@
+{% extends 'ADMIN/commen.html' %}
+
+{% block admin_body %}
+<div class="page-header">
+    <h1>Response Staff</h1>
+    <a href="/admin_add_staff/" class="btn btn-primary"><i class="fas fa-user-plus"></i> Add Staff Member</a>
+</div>
+
+<div class="card">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Photo</th>
+                    <th>Name</th>
+                    <th>Designation</th>
+                    <th>District</th>
+                    <th>Contact</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in staff %}
+                <tr>
+                    <td>
+                        {% if s.profile_pic %}
+                        <img src="{{ s.profile_pic.url }}" class="profile-pic" alt="{{ s.name }}">
+                        {% else %}
+                        <div class="profile-pic" style="background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;"><i class="fas fa-user"></i></div>
+                        {% endif %}
+                    </td>
+                    <td><strong>{{ s.name }}</strong></td>
+                    <td>{{ s.designation }}</td>
+                    <td>{{ s.district.name }}</td>
+                    <td>
+                        <div style="font-size: 0.85rem;"><i class="fas fa-envelope" style="width: 15px;"></i> {{ s.email }}</div>
+                        <div style="font-size: 0.85rem;"><i class="fas fa-phone" style="width: 15px;"></i> {{ s.phone }}</div>
+                    </td>
+                    <td><span class="status-badge badge-approved">{{ s.status }}</span></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-dim);">No staff members registered.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

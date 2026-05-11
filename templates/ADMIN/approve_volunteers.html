@@ -1,0 +1,66 @@
+{% extends 'ADMIN/commen.html' %}
+
+{% block admin_body %}
+<div class="page-header">
+    <h1>Volunteer Network</h1>
+</div>
+
+<div class="card">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Photo</th>
+                    <th>Name</th>
+                    <th>District</th>
+                    <th>Skills</th>
+                    <th>Contact</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in volunteers %}
+                <tr>
+                    <td>
+                        {% if v.profile_pic %}
+                        <img src="{{ v.profile_pic.url }}" class="profile-pic" alt="{{ v.name }}">
+                        {% else %}
+                        <div class="profile-pic" style="background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;"><i class="fas fa-user"></i></div>
+                        {% endif %}
+                    </td>
+                    <td><strong>{{ v.name }}</strong></td>
+                    <td>{{ v.district.name }}</td>
+                    <td style="max-width: 200px; font-size: 0.8rem; color: var(--text-dim);">{{ v.skills }}</td>
+                    <td>
+                        <div style="font-size: 0.85rem;">{{ v.email }}</div>
+                        <div style="font-size: 0.85rem;">{{ v.phone }}</div>
+                    </td>
+                    <td>
+                        <span class="status-badge {% if v.status == 'Pending' %}badge-pending{% elif v.status == 'Approved' %}badge-approved{% else %}badge-rejected{% endif %}">
+                            {{ v.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-links">
+                            {% if v.status == 'Pending' %}
+                            <a href="/admin_volunteer_action?id={{ v.id }}&act=Approved" class="btn btn-sm btn-success"><i class="fas fa-check"></i> Approve</a>
+                            <a href="/admin_volunteer_action?id={{ v.id }}&act=reject" class="btn btn-sm btn-danger"><i class="fas fa-times"></i> Reject</a>
+                            {% elif v.status == 'Approved' %}
+                            <a href="/admin_volunteer_action?id={{ v.id }}&act=Blocked" class="btn btn-sm btn-danger"><i class="fas fa-ban"></i> Block</a>
+                            {% else %}
+                            <a href="/admin_volunteer_action?id={{ v.id }}&act=Approved" class="btn btn-sm btn-success"><i class="fas fa-undo"></i> Restore</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-dim);">No volunteers found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends 'ADMIN/commen.html' %}
+
+{% block admin_body %}
+<div class="page-header">
+    <h1>Emergency Classifications</h1>
+    <a href="/admin_add_emergency_type/" class="btn btn-primary"><i class="fas fa-plus"></i> New Emergency Type</a>
+</div>
+
+<div class="card">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Icon</th>
+                    <th>Type Name</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in types %}
+                <tr>
+                    <td>
+                        {% if t.icon %}
+                        <img src="{{ t.icon.url }}" style="width: 40px; height: 40px; object-fit: contain;" alt="{{ t.name }}">
+                        {% else %}
+                        <i class="fas fa-triangle-exclamation fa-2x" style="color: var(--primary);"></i>
+                        {% endif %}
+                    </td>
+                    <td><strong>{{ t.name }}</strong></td>
+                    <td style="color: var(--text-dim);">{{ t.description }}</td>
+                    <td>
+                        <a href="/admin_delete_emergency_type?id={{ t.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this emergency type?')"><i class="fas fa-trash"></i></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 40px; color: var(--text-dim);">No emergency types defined.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'ADMIN/commen.html' %}
+
+{% block admin_body %}
+<div class="page-header">
+    <h1>Registered Citizens</h1>
+</div>
+
+<div class="card">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Photo</th>
+                    <th>Name</th>
+                    <th>District</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in citizens %}
+                <tr>
+                    <td>
+                        {% if c.profile_pic %}
+                        <img src="{{ c.profile_pic.url }}" class="profile-pic" alt="{{ c.name }}">
+                        {% else %}
+                        <div class="profile-pic" style="background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;"><i class="fas fa-user"></i></div>
+                        {% endif %}
+                    </td>
+                    <td><strong>{{ c.name }}</strong></td>
+                    <td>{{ c.district.name }}</td>
+                    <td>{{ c.email }}</td>
+                    <td>{{ c.phone }}</td>
+                    <td style="max-width: 250px; font-size: 0.85rem; color: var(--text-dim);">{{ c.address }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-dim);">No citizens registered in the system.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

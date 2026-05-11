@@ -1,0 +1,44 @@
+{% extends 'ADMIN/commen.html' %}
+
+{% block admin_body %}
+<div class="page-header">
+    <h1>Manage Districts</h1>
+    <a href="/admin_add_district/" class="btn btn-primary"><i class="fas fa-plus"></i> Add New District</a>
+</div>
+
+<div class="card">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>District Name</th>
+                    <th>State</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in districts %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td><strong>{{ d.name }}</strong></td>
+                    <td>{{ d.state }}</td>
+                    <td style="max-width: 300px; color: var(--text-dim);">{{ d.description|truncatewords:15 }}</td>
+                    <td>
+                        <div class="action-links">
+                            <a href="/admin_edit_district?id={{ d.id }}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
+                            <a href="/admin_delete_district?id={{ d.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this district?')"><i class="fas fa-trash"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-dim);">No districts found. Click "Add New District" to get started.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

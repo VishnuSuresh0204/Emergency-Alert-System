@@ -1,0 +1,28 @@
+{% extends 'ADMIN/commen.html' %}
+
+{% block admin_body %}
+<div class="page-header">
+    <h1>Reply to Feedback</h1>
+    <a href="/admin_view_feedback/" class="btn btn-sm" style="background: rgba(255,255,255,0.1); color: white;"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<div style="max-width: 600px; margin: 0 auto;">
+    <div class="card">
+        <div style="margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <h4 style="color: var(--text-dim); margin-bottom: 5px;">Citizen Message:</h4>
+            <p><strong>{{ feedback.subject }}</strong></p>
+            <p style="margin-top: 10px;">{{ feedback.message }}</p>
+            <small style="color: var(--text-dim);">By {{ feedback.user.name }} on {{ feedback.created_at|date:"d M, Y" }}</small>
+        </div>
+        
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Your Response</label>
+                <textarea name="reply" class="form-control" rows="6" required placeholder="Type your reply here...">{{ feedback.admin_reply|default:'' }}</textarea>
+            </div>
+            <button type="submit" class="btn-submit">Send Reply</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

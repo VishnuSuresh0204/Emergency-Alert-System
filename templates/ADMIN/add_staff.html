@@ -1,0 +1,63 @@
+{% extends 'ADMIN/commen.html' %}
+
+{% block admin_body %}
+<div class="page-header">
+    <h1>Add Staff Member</h1>
+    <a href="/admin_manage_staff/" class="btn btn-sm" style="background: rgba(255,255,255,0.1); color: white;"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<div style="max-width: 800px; margin: 0 auto;">
+    <div class="card">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="name" class="form-control" required placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" name="email" class="form-control" required placeholder="john@example.com">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="text" name="phone" class="form-control" required placeholder="+91 ...">
+                </div>
+                <div class="form-group">
+                    <label>Designation</label>
+                    <input type="text" name="designation" class="form-control" required placeholder="Rescue Coordinator / Health Officer">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>District Assigned</label>
+                    <select name="district" class="form-control" required>
+                        <option value="">Select District</option>
+                        {% for d in districts %}
+                        <option value="{{ d.id }}">{{ d.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Profile Picture</label>
+                    <input type="file" name="profile_pic" class="form-control">
+                </div>
+            </div>
+            <hr style="border-color: rgba(255,255,255,0.1); margin: 10px 0 30px;">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Account Username</label>
+                    <input type="text" name="username" class="form-control" required placeholder="staff_username">
+                </div>
+                <div class="form-group">
+                    <label>Account Password</label>
+                    <input type="password" name="password" class="form-control" required placeholder="••••••••">
+                </div>
+            </div>
+            <button type="submit" class="btn-submit">Register Staff Member</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
