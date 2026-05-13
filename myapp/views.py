@@ -18,7 +18,7 @@ def login_view(request):
         p = request.POST.get('password')
         user = authenticate(username=u, password=p)
         if user:
-            if user.userType == "admin":
+            if user.userType == "admin" or user.is_superuser:
                 login(request, user)
                 request.session["lid"] = user.id
                 return redirect("/admin_home")
