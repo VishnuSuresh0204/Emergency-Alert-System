@@ -1,5 +1,4 @@
-from myapp.models import Feedback
-from public.myapp.models import Citizen
+from myapp.models import Citizen
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -397,3 +396,61 @@ def citizen_view_feedback(request):
     citizen = Citizen.objects.get(loginid_id=request.session["lid"])
     feedbacks = Feedback.objects.filter(user=citizen).order_by('-created_at')
     return render(request, 'CITIZEN/view_feedback.html', {'feedbacks': feedbacks})
+
+def citizen_profile(request):
+    citizen = Citizen.objects.get(loginid_id=request.session["lid"])
+    return render(request, 'CITIZEN/profile.html', {'citizen': citizen})
+
+def citizen_edit_profile(request):
+    citizen = Citizen.objects.get(loginid_id=request.session["lid"])
+    districts = District.objects.all()
+    if request.method == "POST":
+        n = request.POST.get('name')
+        e = request.POST.get('email')
+        ph = request.POST.get('phone')
+        ad = request.POST.get('address')
+        di = request.POST.get('district')
+        pic = request.FILES.get('profile_pic')
+
+        citizen.name = n
+        citizen.email = e
+        citizen.phone = ph
+        citizen.address = ad
+        citizen.district = District.objects.get(id=di)
+        if pic:
+            citizen.profile_pic = pic
+        citizen.save()
+        messages.success(request, "Profile Updated")
+        return redirect("/citizen_profile")
+    return render(request, 'CITIZEN/edit_profile.html', {'citizen': citizen, 'districts': districts})
+
+def volunteer_profile(request):
+    volunteer = Volunteer.objects.get(loginid_id=request.session["lid"])
+    return render(request, 'VOLUNTEER/profile.html', {'volunteer': volunteer})
+
+def volunteer_edit_profile(request):
+    volunteer = Volunteer.objects.get(loginid_id=request.session["lid"])
+    districts = District.objects.all()
+    if request.method == "POST":
+        n = request.POST.get('name')
+        e = request.POST.get('email')
+        ph = request.POST.get('phone')
+        sk = request.POST.get('skills')
+        di = request.POST.get('district')
+        pic = request.FILES.get('profile_pic')
+
+        volunteer.name = n
+        volunteer.email = e
+        volunteer.phone = ph
+        volunteer.skills = sk
+        volunteer.district = District.objects.get(id=di)
+        if pic:
+            volunteer.profile_pic = pic
+        volunteer.save()
+        messages.success(request, "Profile Updated")
+        return redirect("/volunteer_profile")
+    return render(request, 'VOLUNTEER/edit_profile.html', {'volunteer': volunteer, 'districts': districts})
+
+def staff_profile(request):
+    staff = Staff.objects.get(loginid_id=request.session["lid"])
+    return render(request, 'STAFF/profile.html', {'staff': staff})
