@@ -33,22 +33,6 @@ urlpatterns = [
     path('admin_reply_feedback/', views.admin_reply_feedback),
     path('admin_view_citizens/', views.admin_view_citizens),
 
-    # Staff URLs
-    path('staff_home/', views.staff_home),
-    path('staff_view_reports/', views.staff_view_reports),
-    path('staff_verify_report/', views.staff_verify_report),
-    path('staff_view_rescue_requests/', views.staff_view_rescue_requests),
-    path('staff_assign_volunteers/', views.staff_assign_volunteers),
-    path('staff_update_situation/', views.staff_update_situation),
-    path('staff_broadcast_alert/', views.staff_broadcast_alert),
-
-    # Volunteer URLs
-    path('volunteer_home/', views.volunteer_home),
-    path('volunteer_view_assignments/', views.volunteer_view_assignments),
-    path('volunteer_update_status/', views.volunteer_update_status),
-    path('volunteer_update_rescue/', views.volunteer_update_rescue),
-    path('volunteer_view_emergency_map/', views.volunteer_view_emergency_map),
-
     # Citizen URLs
     path('citizen_home/', views.citizen_home),
     path('citizen_report_emergency/', views.citizen_report_emergency),
@@ -57,6 +41,27 @@ urlpatterns = [
     path('citizen_view_alerts/', views.citizen_view_alerts),
     path('citizen_add_feedback/', views.citizen_add_feedback),
     path('citizen_view_feedback/', views.citizen_view_feedback),
+    path('citizen_profile/', views.citizen_profile),
+    path('citizen_edit_profile/', views.citizen_edit_profile),
+
+    # Volunteer URLs
+    path('volunteer_home/', views.volunteer_home),
+    path('volunteer_view_assignments/', views.volunteer_view_assignments),
+    path('volunteer_update_status/', views.volunteer_update_status),
+    path('volunteer_update_rescue/', views.volunteer_update_rescue),
+    path('volunteer_view_emergency_map/', views.volunteer_view_emergency_map),
+    path('volunteer_profile/', views.volunteer_profile),
+    path('volunteer_edit_profile/', views.volunteer_edit_profile),
+
+    # Staff URLs
+    path('staff_home/', views.staff_home),
+    path('staff_view_reports/', views.staff_view_reports),
+    path('staff_verify_report/', views.staff_verify_report),
+    path('staff_view_rescue_requests/', views.staff_view_rescue_requests),
+    path('staff_assign_volunteers/', views.staff_assign_volunteers),
+    path('staff_update_situation/', views.staff_update_situation),
+    path('staff_broadcast_alert/', views.staff_broadcast_alert),
+    path('staff_profile/', views.staff_profile),
 ]
 
 if settings.DEBUG:
