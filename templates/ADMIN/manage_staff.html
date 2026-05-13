@@ -17,6 +17,7 @@
                     <th>District</th>
                     <th>Contact</th>
                     <th>Status</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -36,7 +37,21 @@
                         <div style="font-size: 0.85rem;"><i class="fas fa-envelope" style="width: 15px;"></i> {{ s.email }}</div>
                         <div style="font-size: 0.85rem;"><i class="fas fa-phone" style="width: 15px;"></i> {{ s.phone }}</div>
                     </td>
-                    <td><span class="status-badge badge-approved">{{ s.status }}</span></td>
+                    <td>
+                        <span class="status-badge {% if s.status == 'active' %}badge-approved{% else %}badge-rejected{% endif %}">
+                            {{ s.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-links">
+                            <a href="/admin_edit_staff?id={{ s.id }}" class="btn btn-sm btn-primary"><i class="fas fa-edit"></i> Edit</a>
+                            {% if s.status == 'active' %}
+                            <a href="/admin_staff_status?id={{ s.id }}&act=blocked" class="btn btn-sm btn-danger"><i class="fas fa-ban"></i> Block</a>
+                            {% else %}
+                            <a href="/admin_staff_status?id={{ s.id }}&act=active" class="btn btn-sm btn-success"><i class="fas fa-undo"></i> Unblock</a>
+                            {% endif %}
+                        </div>
+                    </td>
                 </tr>
                 {% empty %}
                 <tr>

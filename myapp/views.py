@@ -23,9 +23,14 @@ def login_view(request):
                 request.session["lid"] = user.id
                 return redirect("/admin_home")
             elif user.userType == "staff":
-                login(request, user)
-                request.session["lid"] = user.id
-                return redirect("/staff_home")
+                s = Staff.objects.get(loginid=user)
+                if s.status == "active":
+                    login(request, user)
+                    request.session["lid"] = user.id
+                    return redirect("/staff_home")
+                else:
+                    messages.error(request, "Your account has been " + s.status)
+                    return redirect("/login")
             elif user.userType == "volunteer":
                 v = Volunteer.objects.get(loginid=user)
                 if v.status == "Approved":
@@ -158,6 +163,35 @@ def admin_add_staff(request):
         messages.success(request, "Staff Added")
         return redirect("/admin_manage_staff")
     return render(request, 'ADMIN/add_staff.html', {'districts': districts})
+
+def admin_edit_staff(request):
+    id = request.GET.get("id")
+    s = Staff.objects.get(id=id)
+    districts = District.objects.all()
+    if request.method == "POST":
+        s.name = request.POST.get('name')
+        s.email = request.POST.get('email')
+        s.phone = request.POST.get('phone')
+        s.designation = request.POST.get('designation')
+        di = request.POST.get('district')
+        s.district = District.objects.get(id=di)
+        
+        if request.FILES.get('profile_pic'):
+            s.profile_pic = request.FILES.get('profile_pic')
+            
+        s.save()
+        messages.success(request, "Staff Details Updated")
+        return redirect("/admin_manage_staff")
+    return render(request, 'ADMIN/edit_staff.html', {'staff': s, 'districts': districts})
+
+def admin_staff_status(request):
+    id = request.GET.get("id")
+    act = request.GET.get("act")
+    s = Staff.objects.get(id=id)
+    s.status = act
+    s.save()
+    messages.success(request, "Staff status updated to " + act)
+    return redirect("/admin_manage_staff")
 
 def admin_approve_volunteers(request):
     volunteers = Volunteer.objects.all()

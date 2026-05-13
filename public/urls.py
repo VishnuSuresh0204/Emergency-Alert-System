@@ -22,6 +22,8 @@ urlpatterns = [
     path('admin_delete_district/', views.admin_delete_district),
     path('admin_manage_staff/', views.admin_manage_staff),
     path('admin_add_staff/', views.admin_add_staff),
+    path('admin_edit_staff/', views.admin_edit_staff),
+    path('admin_staff_status/', views.admin_staff_status),
     path('admin_approve_volunteers/', views.admin_approve_volunteers),
     path('admin_volunteer_action/', views.admin_volunteer_action),
     path('admin_manage_emergency_types/', views.admin_manage_emergency_types),
