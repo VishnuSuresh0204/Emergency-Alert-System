@@ -171,3 +171,14 @@ class ChatMessage(models.Model):
 
     class Meta:
         ordering = ['timestamp']
+
+class DistrictNews(models.Model):
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    district = models.ForeignKey(District, on_delete=models.CASCADE)
+    title = models.CharField(max_length=300)
+    content = models.TextField()
+    news_type = models.CharField(max_length=50, default="News") # News, Caution, Precaution
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title

@@ -333,22 +333,22 @@ def staff_update_situation(request):
         return redirect("/staff_view_reports")
     return render(request, 'STAFF/update_situation.html', {'report': report})
 
-def staff_broadcast_alert(request):
+def staff_post_news(request):
     staff = Staff.objects.get(loginid_id=request.session["lid"])
     if request.method == "POST":
         ti = request.POST.get('title')
-        msg = request.POST.get('message')
-        lv = request.POST.get('level')
-        EmergencyAlert.objects.create(title=ti, message=msg, alert_level=lv, district=staff.district, posted_by=request.user)
+        cont = request.POST.get('content')
+        nt = request.POST.get('type')
+        DistrictNews.objects.create(title=ti, content=cont, news_type=nt, district=staff.district, staff=staff)
         
         # Create notifications for all citizens in this district
         citizens = Citizen.objects.filter(district=staff.district)
         for c in citizens:
-            Notification.objects.create(user=c.loginid, message=f"DISTRICT ALERT: {ti}")
+            Notification.objects.create(user=c.loginid, message=f"DISTRICT {nt.upper()}: {ti}")
             
-        messages.success(request, "District Alert Broadcasted")
+        messages.success(request, f"District {nt} Posted")
         return redirect("/staff_home")
-    return render(request, 'STAFF/broadcast_alert.html')
+    return render(request, 'STAFF/post_news.html')
 
 # ================= VOLUNTEER VIEWS =================
 
@@ -445,6 +445,11 @@ def citizen_request_rescue(request):
         messages.success(request, "Rescue Request Sent")
         return redirect("/citizen_home")
     return render(request, 'CITIZEN/request_rescue.html', {'report': report})
+
+def citizen_view_news(request):
+    citizen = Citizen.objects.get(loginid_id=request.session["lid"])
+    news = DistrictNews.objects.filter(district=citizen.district).order_by('-created_at')
+    return render(request, 'CITIZEN/view_news.html', {'news': news})
 
 def citizen_view_alerts(request):
     citizen = Citizen.objects.get(loginid_id=request.session["lid"])
