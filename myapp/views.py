@@ -625,6 +625,44 @@ def chat_room(request, receiver_id):
     }
     return render(request, 'chat_room.html', context)
 
+def view_my_chats(request):
+    my_lid = request.session.get("lid")
+    if not my_lid:
+        return redirect("/")
+    
+    # Find all people I have exchanged messages with
+    sent_to = ChatMessage.objects.filter(sender_id=my_lid).values_list('receiver_id', flat=True)
+    received_from = ChatMessage.objects.filter(receiver_id=my_lid).values_list('sender_id', flat=True)
+    
+    distinct_ids = set(list(sent_to) + list(received_from))
+    chat_partners = []
+    
+    for pid in distinct_ids:
+        partner = Login.objects.get(id=pid)
+        # Try to find their name from Staff or Volunteer
+        name = partner.username
+        if Staff.objects.filter(loginid=partner).exists():
+            name = Staff.objects.get(loginid=partner).name
+        elif Volunteer.objects.filter(loginid=partner).exists():
+            name = Volunteer.objects.get(loginid=partner).name
+            
+        last_msg = ChatMessage.objects.filter(
+            (models.Q(sender_id=my_lid) & models.Q(receiver_id=pid)) |
+            (models.Q(sender_id=pid) & models.Q(receiver_id=my_lid))
+        ).last()
+        
+        chat_partners.append({
+            'lid': pid,
+            'name': name,
+            'last_message': last_msg.message if last_msg else "",
+            'time': last_msg.timestamp if last_msg else None,
+            'unread': ChatMessage.objects.filter(sender_id=pid, receiver_id=my_lid, is_read=False).count()
+        })
+    
+    chat_partners.sort(key=lambda x: x['time'] if x['time'] else x['time'], reverse=True)
+        
+    return render(request, 'view_my_chats.html', {'chats': chat_partners})
+
 # --- Notification AJAX Views ---
 
 from django.http import JsonResponse

@@ -71,6 +71,7 @@ urlpatterns = [
     path('volunteer_view_urgent_work/', views.volunteer_view_urgent_work),
     path('volunteer_accept_work/<int:id>/', views.volunteer_accept_work),
     path('chat_room/<int:receiver_id>/', views.chat_room),
+    path('view_my_chats/', views.view_my_chats),
     path('get_notifications/', views.get_notifications),
 ]
 
