@@ -30,9 +30,20 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Specific Location / Landmark</label>
-                    <input type="text" name="location" class="form-control" required placeholder="e.g. Near City Hospital, 2nd Cross">
+                    <label>Detected District</label>
+                    <select name="district_id" id="district_id" class="form-control" required>
+                        <option value="">Detection District...</option>
+                        {% for d in districts %}
+                        <option value="{{ d.id }}">{{ d.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <small id="dist_msg" style="color: var(--text-dim); font-size: 0.75rem;">Detected automatically from map</small>
                 </div>
+            </div>
+
+            <div class="form-group">
+                <label>Specific Location / Landmark</label>
+                <input type="text" name="location" id="location_input" class="form-control" required placeholder="e.g. Near City Hospital, 2nd Cross">
             </div>
 
             <div class="form-group">
@@ -73,13 +84,19 @@
         var defaultLat = 10.5276;
         var defaultLon = 76.2144;
         
-        var map = L.map('map').setView([defaultLat, defaultLon], 13);
+        var map = L.map('map').setView([defaultLat, defaultLon], 8);
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
         var marker;
+
+        const districts = [
+            {% for d in districts %}
+            { id: "{{ d.id }}", name: "{{ d.name }}" },
+            {% endfor %}
+        ];
 
         function updateMarker(lat, lon) {
             if (marker) {
@@ -90,11 +107,54 @@
                     var position = marker.getLatLng();
                     document.getElementById('lat').value = position.lat;
                     document.getElementById('lon').value = position.lng;
+                    reverseGeocode(position.lat, position.lng);
                 });
             }
             document.getElementById('lat').value = lat;
             document.getElementById('lon').value = lon;
             map.setView([lat, lon], 15);
+            reverseGeocode(lat, lon);
+        }
+
+        function reverseGeocode(lat, lon) {
+            document.getElementById('dist_msg').innerText = "Detecting district...";
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.address) {
+                        const address = data.address;
+                        const detectedDist = address.county || address.state_district || address.city || "";
+                        const cleanDist = detectedDist.replace(" District", "").replace(" district", "").trim();
+                        
+                        console.log("Detected District:", cleanDist);
+                        
+                        let found = false;
+                        for (let d of districts) {
+                            if (d.name.toLowerCase() === cleanDist.toLowerCase()) {
+                                document.getElementById('district_id').value = d.id;
+                                document.getElementById('dist_msg').innerText = "Successfully detected: " + d.name;
+                                found = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!found) {
+                            document.getElementById('dist_msg').innerText = "Could not match district: " + cleanDist + ". Please select manually.";
+                            document.getElementById('dist_msg').style.color = "#ef4444";
+                        } else {
+                            document.getElementById('dist_msg').style.color = "#10b981";
+                        }
+
+                        // Also auto-fill location name if empty
+                        if (!document.getElementById('location_input').value) {
+                            document.getElementById('location_input').value = data.display_name.split(',').slice(0, 3).join(',');
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('dist_msg').innerText = "Network error while detecting district.";
+                });
         }
 
         map.on('click', function(e) {
@@ -117,6 +177,10 @@
         document.getElementById('emergencyForm').onsubmit = function() {
             if (!document.getElementById('lat').value || !document.getElementById('lon').value) {
                 alert("Please pin the location on the map before submitting.");
+                return false;
+            }
+            if (!document.getElementById('district_id').value) {
+                alert("Please select the district. The system could not auto-detect it.");
                 return false;
             }
             return true;

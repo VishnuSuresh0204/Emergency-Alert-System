@@ -395,26 +395,29 @@ def citizen_home(request):
 
 def citizen_report_emergency(request):
     types = EmergencyType.objects.all()
+    districts = District.objects.all()
     citizen = Citizen.objects.get(loginid_id=request.session["lid"])
     if request.method == "POST":
         ty = request.POST.get('type')
         loc = request.POST.get('location')
         lat = request.POST.get('latitude')
         lon = request.POST.get('longitude')
+        di = request.POST.get('district_id') # Get detected district
         desc = request.POST.get('description')
         img = request.FILES.get('image')
 
         etype = EmergencyType.objects.get(id=ty)
-        EmergencyReport.objects.create(user=citizen, emergency_type=etype, district=citizen.district, location_details=loc, latitude=lat, longitude=lon, description=desc, image=img)
+        district = District.objects.get(id=di)
+        EmergencyReport.objects.create(user=citizen, emergency_type=etype, district=district, location_details=loc, latitude=lat, longitude=lon, description=desc, image=img)
         
-        # Notify staff of this district
-        staff_members = Staff.objects.filter(district=citizen.district)
+        # Notify staff of THIS district
+        staff_members = Staff.objects.filter(district=district)
         for s in staff_members:
             Notification.objects.create(user=s.loginid, message=f"NEW EMERGENCY: {etype.name} reported at {loc}")
             
-        messages.success(request, "Emergency Reported. Authorities are notified.")
+        messages.success(request, "Emergency Reported. District authorities are notified.")
         return redirect("/citizen_view_reports")
-    return render(request, 'CITIZEN/report_emergency.html', {'types': types})
+    return render(request, 'CITIZEN/report_emergency.html', {'types': types, 'districts': districts})
 
 def citizen_view_reports(request):
     citizen = Citizen.objects.get(loginid_id=request.session["lid"])
