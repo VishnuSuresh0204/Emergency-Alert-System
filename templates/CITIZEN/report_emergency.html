@@ -145,10 +145,9 @@
                             document.getElementById('dist_msg').style.color = "#10b981";
                         }
 
-                        // Also auto-fill location name if empty
-                        if (!document.getElementById('location_input').value) {
-                            document.getElementById('location_input').value = data.display_name.split(',').slice(0, 3).join(',');
-                        }
+                        // Always auto-fill/update location landmark
+                        const shortAddr = data.display_name.split(',').slice(0, 4).join(',');
+                        document.getElementById('location_input').value = shortAddr;
                     }
                 })
                 .catch(err => {
