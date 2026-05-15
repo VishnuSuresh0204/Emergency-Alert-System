@@ -1,0 +1,41 @@
+{% extends 'STAFF/commen.html' %}
+
+{% block staff_body %}
+<div class="page-header">
+    <h1>Edit District News</h1>
+    <a href="/staff_view_news/" class="btn btn-sm" style="background: rgba(255,255,255,0.1); color: white;"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<div style="max-width: 700px; margin: 0 auto;">
+    <div class="card">
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" name="title" class="form-control" value="{{ news.title }}" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Update Type</label>
+                <select name="type" class="form-control" required>
+                    <option value="News" {% if news.news_type == 'News' %}selected{% endif %}>General News</option>
+                    <option value="Caution" {% if news.news_type == 'Caution' %}selected{% endif %}>Caution / Warning</option>
+                    <option value="Precaution" {% if news.news_type == 'Precaution' %}selected{% endif %}>Safety Precaution</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Details / Content</label>
+                <textarea name="content" class="form-control" rows="8" required>{{ news.content }}</textarea>
+            </div>
+            
+            <div style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 25px; border: 1px dashed var(--primary);">
+                <p style="color: var(--primary); font-size: 0.85rem; margin: 0;"><i class="fas fa-info-circle"></i> Updating this will re-notify all registered Citizens, Volunteers, and Staff in the district.</p>
+            </div>
+            
+            <button type="submit" class="btn-submit">UPDATE NEWS</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

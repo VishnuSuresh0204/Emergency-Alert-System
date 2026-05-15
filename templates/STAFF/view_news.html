@@ -28,9 +28,14 @@
                     <td><strong>{{ n.title }}</strong></td>
                     <td style="max-width: 300px; font-size: 0.85rem; color: var(--text-dim);">{{ n.content|truncatechars:100 }}</td>
                     <td>
-                        <a href="/staff_delete_news/?id={{ n.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this news?')">
-                            <i class="fas fa-trash"></i>
-                        </a>
+                        <div style="display: flex; gap: 5px;">
+                            <a href="/staff_edit_news/?id={{ n.id }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="/staff_delete_news/?id={{ n.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this news?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 {% empty %}

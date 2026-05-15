@@ -32,9 +32,14 @@
                     <td>{{ a.title }}</td>
                     <td style="max-width: 300px; font-size: 0.85rem; color: var(--text-dim);">{{ a.message|truncatechars:100 }}</td>
                     <td>
-                        <a href="/admin_delete_alert/?id={{ a.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this alert?')">
-                            <i class="fas fa-trash"></i>
-                        </a>
+                        <div style="display: flex; gap: 5px;">
+                            <a href="/admin_edit_alert/?id={{ a.id }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="/admin_delete_alert/?id={{ a.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this alert?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
                     </td>
                 </tr>
                 {% empty %}

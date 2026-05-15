@@ -257,6 +257,35 @@ def admin_view_alerts(request):
     alerts = EmergencyAlert.objects.all().order_by('-created_at')
     return render(request, 'ADMIN/view_alerts.html', {'alerts': alerts})
 
+def admin_edit_alert(request):
+    id = request.GET.get("id")
+    alert = EmergencyAlert.objects.get(id=id)
+    districts = District.objects.all()
+    if request.method == "POST":
+        alert.title = request.POST.get('title')
+        alert.message = request.POST.get('message')
+        alert.alert_level = request.POST.get('level')
+        di = request.POST.get('district')
+        alert.district = District.objects.get(id=di)
+        alert.is_active = 'is_active' in request.POST
+        alert.save()
+        
+        # Notify ALL in the district about the update
+        msg = f"ALERT UPDATED: {alert.title}"
+        # Citizens
+        for c in Citizen.objects.filter(district=alert.district):
+            Notification.objects.create(user=c.loginid, message=msg)
+        # Staff
+        for s in Staff.objects.filter(district=alert.district):
+            Notification.objects.create(user=s.loginid, message=msg)
+        # Volunteers
+        for v in Volunteer.objects.filter(district=alert.district):
+            Notification.objects.create(user=v.loginid, message=msg)
+            
+        messages.success(request, "Alert Updated and District Notified")
+        return redirect("/admin_view_alerts")
+    return render(request, 'ADMIN/edit_alert.html', {'alert': alert, 'districts': districts})
+
 def admin_delete_alert(request):
     id = request.GET.get("id")
     EmergencyAlert.objects.get(id=id).delete()
@@ -682,6 +711,28 @@ def staff_view_news(request):
     staff = Staff.objects.get(loginid_id=request.session["lid"])
     news = DistrictNews.objects.filter(district=staff.district).order_by('-created_at')
     return render(request, 'STAFF/view_news.html', {'news': news})
+
+def staff_edit_news(request):
+    id = request.GET.get("id")
+    news = DistrictNews.objects.get(id=id)
+    if request.method == "POST":
+        news.title = request.POST.get('title')
+        news.content = request.POST.get('content')
+        news.news_type = request.POST.get('type')
+        news.save()
+        
+        # Notify ALL in the district
+        msg = f"NEWS UPDATED: {news.title}"
+        for c in Citizen.objects.filter(district=news.district):
+            Notification.objects.create(user=c.loginid, message=msg)
+        for s in Staff.objects.filter(district=news.district):
+            Notification.objects.create(user=s.loginid, message=msg)
+        for v in Volunteer.objects.filter(district=news.district):
+            Notification.objects.create(user=v.loginid, message=msg)
+            
+        messages.success(request, "News Updated and District Notified")
+        return redirect("/staff_view_news")
+    return render(request, 'STAFF/edit_news.html', {'news': news})
 
 def staff_delete_news(request):
     id = request.GET.get("id")
