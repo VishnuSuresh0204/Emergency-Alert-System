@@ -132,6 +132,27 @@
         .action-links { display: flex; gap: 8px; }
 
         .footer { margin-left: 260px; background: rgba(15,23,42,0.95); padding: 30px 40px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; color: var(--text-dim); font-size: 0.85rem; }
+
+        /* Notification Toasts */
+        #notification-container {
+            position: fixed; top: 20px; right: 20px; z-index: 9999;
+            display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+        }
+        .toast-notification {
+            background: var(--sidebar-bg); color: white; padding: 15px 25px;
+            border-radius: 12px; box-shadow: var(--shadow); border-left: 5px solid var(--primary);
+            display: flex; align-items: center; gap: 15px; min-width: 300px;
+            transform: translateX(120%); transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            pointer-events: auto; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);
+        }
+        .toast-notification.show { transform: translateX(0); }
+        .toast-notification.emergency { border-left-color: var(--emergency); }
+        .toast-icon { font-size: 1.2rem; color: var(--primary); }
+        .toast-content { flex: 1; }
+        .toast-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 2px; display: block; }
+        .toast-msg { font-size: 0.8rem; color: var(--text-dim); }
+        .toast-close { cursor: pointer; color: var(--text-dim); transition: var(--transition); }
+        .toast-close:hover { color: white; }
     </style>
 </head>
 
@@ -188,6 +209,57 @@
     <footer class="footer">
         <p>&copy; 2026 District Based Emergency Alert System. Staff Console. All Rights Reserved.</p>
     </footer>
+
+    <div id="notification-container"></div>
+
+    <script>
+        function showNotification(message, isEmergency = false) {
+            const container = document.getElementById('notification-container');
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${isEmergency ? 'emergency' : ''}`;
+            
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="fas ${isEmergency ? 'fa-triangle-exclamation' : 'fa-bell'}"></i>
+                </div>
+                <div class="toast-content">
+                    <span class="toast-title">${isEmergency ? 'EMERGENCY ALERT' : 'Notification'}</span>
+                    <p class="toast-msg">${message}</p>
+                </div>
+                <div class="toast-close"><i class="fas fa-times"></i></div>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            const timeout = setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 500);
+            }, 6000);
+            
+            toast.querySelector('.toast-close').onclick = () => {
+                clearTimeout(timeout);
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 500);
+            };
+        }
+
+        function checkNotifications() {
+            fetch('/get_notifications/')
+                .then(response => response.json())
+                .then(data => {
+                    data.notifications.forEach(n => {
+                        const isEmergency = n.message.includes('ALERT') || n.message.includes('EMERGENCY');
+                        showNotification(n.message, isEmergency);
+                    });
+                })
+                .catch(err => console.error('Error fetching notifications:', err));
+        }
+
+        setInterval(checkNotifications, 10000);
+        setTimeout(checkNotifications, 2000);
+    </script>
 </body>
 
 </html>

@@ -64,6 +64,7 @@ urlpatterns = [
     path('staff_update_situation/', views.staff_update_situation),
     path('staff_broadcast_alert/', views.staff_broadcast_alert),
     path('staff_profile/', views.staff_profile),
+    path('get_notifications/', views.get_notifications),
 ]
 
 if settings.DEBUG:

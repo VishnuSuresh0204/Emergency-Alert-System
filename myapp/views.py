@@ -243,6 +243,12 @@ def admin_send_alert(request):
         di = request.POST.get('district')
         district = District.objects.get(id=di)
         EmergencyAlert.objects.create(title=ti, message=msg, alert_level=lv, district=district, posted_by=request.user)
+        
+        # Create notifications for all citizens in this district
+        citizens = Citizen.objects.filter(district=district)
+        for c in citizens:
+            Notification.objects.create(user=c.loginid, message=f"ALERT: {ti}")
+            
         messages.success(request, "Alert Sent to District Citizens")
         return redirect("/admin_home")
     return render(request, 'ADMIN/send_alert.html', {'districts': districts})
@@ -306,6 +312,12 @@ def staff_assign_volunteers(request):
         rescue_request.assigned_volunteers.set(vids)
         rescue_request.status = "Assigned"
         rescue_request.save()
+        
+        # Notify assigned volunteers
+        for vid in vids:
+            v = Volunteer.objects.get(id=vid)
+            Notification.objects.create(user=v.loginid, message=f"You have been assigned to a rescue mission for {rescue_request.contact_person}")
+            
         messages.success(request, "Volunteers Assigned to Rescue Operation")
         return redirect("/staff_view_rescue_requests")
     return render(request, 'STAFF/assign_volunteers.html', {'rescue_request': rescue_request, 'volunteers': volunteers})
@@ -328,6 +340,12 @@ def staff_broadcast_alert(request):
         msg = request.POST.get('message')
         lv = request.POST.get('level')
         EmergencyAlert.objects.create(title=ti, message=msg, alert_level=lv, district=staff.district, posted_by=request.user)
+        
+        # Create notifications for all citizens in this district
+        citizens = Citizen.objects.filter(district=staff.district)
+        for c in citizens:
+            Notification.objects.create(user=c.loginid, message=f"DISTRICT ALERT: {ti}")
+            
         messages.success(request, "District Alert Broadcasted")
         return redirect("/staff_home")
     return render(request, 'STAFF/broadcast_alert.html')
@@ -388,6 +406,12 @@ def citizen_report_emergency(request):
 
         etype = EmergencyType.objects.get(id=ty)
         EmergencyReport.objects.create(user=citizen, emergency_type=etype, district=citizen.district, location_details=loc, latitude=lat, longitude=lon, description=desc, image=img)
+        
+        # Notify staff of this district
+        staff_members = Staff.objects.filter(district=citizen.district)
+        for s in staff_members:
+            Notification.objects.create(user=s.loginid, message=f"NEW EMERGENCY: {etype.name} reported at {loc}")
+            
         messages.success(request, "Emergency Reported. Authorities are notified.")
         return redirect("/citizen_view_reports")
     return render(request, 'CITIZEN/report_emergency.html', {'types': types})
@@ -409,6 +433,12 @@ def citizen_request_rescue(request):
         msg = request.POST.get('message')
 
         RescueRequest.objects.create(report=report, user=citizen, district=citizen.district, contact_person=cp, contact_phone=ph, number_of_people=num, priority=pri, message=msg)
+        
+        # Notify staff of this district
+        staff_members = Staff.objects.filter(district=citizen.district)
+        for s in staff_members:
+            Notification.objects.create(user=s.loginid, message=f"RESCUE REQUESTED: For {report.emergency_type.name} at {report.location_details}")
+            
         messages.success(request, "Rescue Request Sent")
         return redirect("/citizen_home")
     return render(request, 'CITIZEN/request_rescue.html', {'report': report})
@@ -490,3 +520,24 @@ def volunteer_edit_profile(request):
 def staff_profile(request):
     staff = Staff.objects.get(loginid_id=request.session["lid"])
     return render(request, 'STAFF/profile.html', {'staff': staff})
+
+# --- Notification AJAX Views ---
+
+from django.http import JsonResponse
+
+def get_notifications(request):
+    if "lid" in request.session:
+        notifications = Notification.objects.filter(user_id=request.session["lid"], is_read=False).order_by('-created_at')
+        data = []
+        for n in notifications:
+            data.append({
+                'id': n.id,
+                'message': n.message,
+                'time': n.created_at.strftime("%H:%M")
+            })
+            # Mark as read after fetching? Or let the user click? 
+            # User mentioned "notification pop up", usually it shows once.
+            n.is_read = True
+            n.save()
+        return JsonResponse({'notifications': data})
+    return JsonResponse({'notifications': []})
