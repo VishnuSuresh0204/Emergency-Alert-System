@@ -147,3 +147,27 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"Notification for {self.user.username}: {self.message[:30]}"
+
+class UrgentWorkRequest(models.Model):
+    staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
+    district = models.ForeignKey(District, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class UrgentWorkResponse(models.Model):
+    request = models.ForeignKey(UrgentWorkRequest, on_delete=models.CASCADE)
+    volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE)
+    message = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=50, default="Pending") # Pending, Accepted
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class ChatMessage(models.Model):
+    sender = models.ForeignKey(Login, on_delete=models.CASCADE, related_name="sent_messages")
+    receiver = models.ForeignKey(Login, on_delete=models.CASCADE, related_name="received_messages")
+    message = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['timestamp']

@@ -534,6 +534,97 @@ def staff_view_citizens(request):
     citizens = Citizen.objects.filter(district=staff.district)
     return render(request, 'STAFF/view_citizens.html', {'citizens': citizens})
 
+def staff_post_urgent_work(request):
+    staff = Staff.objects.get(loginid_id=request.session["lid"])
+    if request.method == "POST":
+        ti = request.POST.get('title')
+        ds = request.POST.get('description')
+        UrgentWorkRequest.objects.create(staff=staff, district=staff.district, title=ti, description=ds)
+        
+        # Notify all volunteers in the district
+        volunteers = Volunteer.objects.filter(district=staff.district, status='Approved')
+        for v in volunteers:
+            Notification.objects.create(user=v.loginid, message=f"URGENT WORK: {ti}")
+            
+        messages.success(request, "Urgent Work Request Broadcasted to District Volunteers")
+        return redirect("/staff_home")
+    return render(request, 'STAFF/post_urgent_work.html')
+
+def staff_view_work_responses(request):
+    staff = Staff.objects.get(loginid_id=request.session["lid"])
+    responses = UrgentWorkResponse.objects.filter(request__staff=staff).order_by('-created_at')
+    return render(request, 'STAFF/view_work_responses.html', {'responses': responses})
+
+def volunteer_view_urgent_work(request):
+    volunteer = Volunteer.objects.get(loginid_id=request.session["lid"])
+    requests = UrgentWorkRequest.objects.filter(district=volunteer.district).order_by('-created_at')
+    return render(request, 'VOLUNTEER/view_urgent_work.html', {'requests': requests})
+
+def volunteer_accept_work(request, id):
+    volunteer = Volunteer.objects.get(loginid_id=request.session["lid"])
+    work_req = UrgentWorkRequest.objects.get(id=id)
+    
+    if request.method == "POST":
+        msg = request.POST.get('message')
+        # Check if already responded
+        resp, created = UrgentWorkResponse.objects.get_or_create(request=work_req, volunteer=volunteer)
+        resp.message = msg
+        resp.status = "Accepted"
+        resp.save()
+        
+        # Notify the staff member
+        Notification.objects.create(user=work_req.staff.loginid, message=f"Volunteer {volunteer.name} accepted work: {work_req.title}")
+        
+        messages.success(request, "Work Request Accepted. Chat channel created.")
+        return redirect(f"/chat_room/{work_req.staff.loginid.id}/")
+    return render(request, 'VOLUNTEER/accept_work.html', {'work': work_req})
+
+def chat_room(request, receiver_id):
+    my_lid = request.session.get("lid")
+    receiver = Login.objects.get(id=receiver_id)
+    
+    # Check if a response exists to authorize chat (security)
+    # If staff is sender, receiver is volunteer. If volunteer is sender, receiver is staff.
+    is_staff = Staff.objects.filter(loginid_id=my_lid).exists()
+    is_volunteer = Volunteer.objects.filter(loginid_id=my_lid).exists()
+    
+    # Simple security: Only allow if they have an active work response together
+    if is_staff:
+        staff = Staff.objects.get(loginid_id=my_lid)
+        volunteer = Volunteer.objects.get(loginid_id=receiver_id)
+        if not UrgentWorkResponse.objects.filter(request__staff=staff, volunteer=volunteer, status='Accepted').exists():
+             messages.error(request, "Unauthorized chat session.")
+             return redirect("/")
+    elif is_volunteer:
+        volunteer = Volunteer.objects.get(loginid_id=my_lid)
+        staff = Staff.objects.get(loginid_id=receiver_id)
+        if not UrgentWorkResponse.objects.filter(request__staff=staff, volunteer=volunteer, status='Accepted').exists():
+             messages.error(request, "Unauthorized chat session.")
+             return redirect("/")
+    else:
+        return redirect("/")
+
+    if request.method == "POST":
+        msg = request.POST.get('message')
+        if msg:
+            ChatMessage.objects.create(sender_id=my_lid, receiver=receiver, message=msg)
+        return redirect(f"/chat_room/{receiver_id}/")
+
+    messages_list = ChatMessage.objects.filter(
+        (models.Q(sender_id=my_lid) & models.Q(receiver=receiver)) |
+        (models.Q(sender=receiver) & models.Q(receiver_id=my_lid))
+    ).order_by('timestamp')
+    
+    # Mark messages as read
+    ChatMessage.objects.filter(sender=receiver, receiver_id=my_lid, is_read=False).update(is_read=True)
+
+    context = {
+        'receiver': receiver,
+        'messages_list': messages_list,
+        'my_lid': my_lid
+    }
+    return render(request, 'chat_room.html', context)
+
 # --- Notification AJAX Views ---
 
 from django.http import JsonResponse

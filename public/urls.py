@@ -66,6 +66,11 @@ urlpatterns = [
     path('staff_profile/', views.staff_profile),
     path('staff_view_volunteers/', views.staff_view_volunteers),
     path('staff_view_citizens/', views.staff_view_citizens),
+    path('staff_post_urgent_work/', views.staff_post_urgent_work),
+    path('staff_view_work_responses/', views.staff_view_work_responses),
+    path('volunteer_view_urgent_work/', views.volunteer_view_urgent_work),
+    path('volunteer_accept_work/<int:id>/', views.volunteer_accept_work),
+    path('chat_room/<int:receiver_id>/', views.chat_room),
     path('get_notifications/', views.get_notifications),
 ]
 

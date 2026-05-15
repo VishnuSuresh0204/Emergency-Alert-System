@@ -1,0 +1,31 @@
+{% extends 'STAFF/commen.html' %}
+
+{% block staff_body %}
+<div class="page-header">
+    <h1>Post Urgent Work Request</h1>
+    <p style="color: var(--text-dim);">Broadcast an urgent requirement to all volunteers in your district.</p>
+</div>
+
+<div style="max-width: 700px; margin: 0 auto;">
+    <div class="card">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Work Title</label>
+                <input type="text" name="title" class="form-control" placeholder="e.g. Need 5 volunteers for Flood Relief Supply distribution" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Detailed Description</label>
+                <textarea name="description" class="form-control" rows="8" placeholder="Provide full details, location, time, and skills required..." required></textarea>
+            </div>
+            
+            <div style="background: rgba(245, 158, 11, 0.1); padding: 15px; border-radius: 10px; margin-bottom: 25px; border: 1px dashed var(--accent);">
+                <p style="color: var(--accent); font-size: 0.85rem; margin: 0;"><i class="fas fa-bullhorn"></i> This will send a notification to all approved volunteers in your district immediately.</p>
+            </div>
+            
+            <button type="submit" class="btn-submit">BROADCAST REQUEST</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
