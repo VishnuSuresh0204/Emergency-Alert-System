@@ -123,23 +123,26 @@
                 .then(data => {
                     if (data.address) {
                         const address = data.address;
-                        const detectedDist = address.county || address.state_district || address.city || "";
-                        const cleanDist = detectedDist.replace(" District", "").replace(" district", "").trim();
+                        const detectedDist = address.county || address.state_district || address.city || address.town || "";
+                        const cleanDist = detectedDist.replace(/ District/i, "").replace(/ division/i, "").trim().toLowerCase();
                         
-                        console.log("Detected District:", cleanDist);
+                        console.log("Map API Returned:", address);
+                        console.log("Looking for match for:", cleanDist);
                         
                         let found = false;
                         for (let d of districts) {
-                            if (d.name.toLowerCase() === cleanDist.toLowerCase()) {
+                            const dbName = d.name.toLowerCase();
+                            // Match if names are equal OR if one contains the other (e.g., Ernakulam contains Kochi or vice versa in some mappings)
+                            if (dbName === cleanDist || dbName.includes(cleanDist) || cleanDist.includes(dbName)) {
                                 document.getElementById('district_id').value = d.id;
-                                document.getElementById('dist_msg').innerText = "Successfully detected: " + d.name;
+                                document.getElementById('dist_msg').innerText = "Successfully matched: " + d.name;
                                 found = true;
                                 break;
                             }
                         }
                         
                         if (!found) {
-                            document.getElementById('dist_msg').innerText = "Could not match district: " + cleanDist + ". Please select manually.";
+                            document.getElementById('dist_msg').innerText = "Detected: '" + detectedDist + "'. Please select matching district manually.";
                             document.getElementById('dist_msg').style.color = "#ef4444";
                         } else {
                             document.getElementById('dist_msg').style.color = "#10b981";
