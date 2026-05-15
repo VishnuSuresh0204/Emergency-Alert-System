@@ -6,11 +6,18 @@
     <a href="/citizen_home/" class="btn btn-sm" style="background: rgba(255,255,255,0.1); color: white;"><i class="fas fa-arrow-left"></i> Back</a>
 </div>
 
+<!-- Leaflet Map CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<style>
+    #map { height: 350px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
+    .map-instructions { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+</style>
+
 <div style="max-width: 800px; margin: 0 auto;">
     <div class="card" style="border-top: 5px solid var(--emergency);">
         <p style="color: var(--text-dim); margin-bottom: 25px;">Please provide accurate details. Misreporting may lead to legal action.</p>
         
-        <form method="POST" enctype="multipart/form-data">
+        <form method="POST" enctype="multipart/form-data" id="emergencyForm">
             {% csrf_token %}
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                 <div class="form-group">
@@ -26,6 +33,17 @@
                     <label>Specific Location / Landmark</label>
                     <input type="text" name="location" class="form-control" required placeholder="e.g. Near City Hospital, 2nd Cross">
                 </div>
+            </div>
+
+            <div class="form-group">
+                <label>Pin Location on Map</label>
+                <div class="map-instructions">
+                    <span><i class="fas fa-map-marker-alt"></i> Click on the map to pin exact location</span>
+                    <button type="button" id="currentLocBtn" class="btn btn-sm" style="background: var(--primary); font-size: 0.75rem; padding: 5px 10px;"><i class="fas fa-location-crosshairs"></i> Use My Location</button>
+                </div>
+                <div id="map"></div>
+                <input type="hidden" name="latitude" id="lat" required>
+                <input type="hidden" name="longitude" id="lon" required>
             </div>
             
             <div class="form-group">
@@ -46,4 +64,63 @@
         </form>
     </div>
 </div>
+
+<!-- Leaflet Map JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Default location (e.g., Kerala center)
+        var defaultLat = 10.5276;
+        var defaultLon = 76.2144;
+        
+        var map = L.map('map').setView([defaultLat, defaultLon], 13);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        var marker;
+
+        function updateMarker(lat, lon) {
+            if (marker) {
+                marker.setLatLng([lat, lon]);
+            } else {
+                marker = L.marker([lat, lon], {draggable: true}).addTo(map);
+                marker.on('dragend', function(event) {
+                    var position = marker.getLatLng();
+                    document.getElementById('lat').value = position.lat;
+                    document.getElementById('lon').value = position.lng;
+                });
+            }
+            document.getElementById('lat').value = lat;
+            document.getElementById('lon').value = lon;
+            map.setView([lat, lon], 15);
+        }
+
+        map.on('click', function(e) {
+            updateMarker(e.latlng.lat, e.latlng.lng);
+        });
+
+        document.getElementById('currentLocBtn').addEventListener('click', function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    updateMarker(position.coords.latitude, position.coords.longitude);
+                }, function() {
+                    alert("Could not get your location. Please pin it manually.");
+                });
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        });
+        
+        // Form validation for location
+        document.getElementById('emergencyForm').onsubmit = function() {
+            if (!document.getElementById('lat').value || !document.getElementById('lon').value) {
+                alert("Please pin the location on the map before submitting.");
+                return false;
+            }
+            return true;
+        };
+    });
+</script>
 {% endblock %}
