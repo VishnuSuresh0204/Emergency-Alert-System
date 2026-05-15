@@ -358,14 +358,9 @@
             box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.15);
         }
 
-        select.form-control {
-            appearance: auto;
-        }
-
-        .form-control option {
-            background-color: #1e293b; /* Solid background for options */
-            color: white;
-        }
+        select.form-control { appearance: auto; background-image: none; color: white !important; }
+        .form-control option { background-color: #1e293b !important; color: white !important; padding: 10px; }
+        select.form-control:focus option { background-color: #1e293b !important; color: white !important; }
 
         .btn-submit {
             background: var(--primary);
