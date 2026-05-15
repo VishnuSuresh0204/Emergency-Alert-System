@@ -23,7 +23,15 @@
                 <tr>
                     <td>{{ r.reported_at|date:"d M, H:i" }}</td>
                     <td><strong>{{ r.emergency_type.name }}</strong></td>
-                    <td>{{ r.location_details }}</td>
+                    <td>
+                        {{ r.location_details }}
+                        {% if r.latitude and r.longitude %}
+                        <br>
+                        <a href="https://www.google.com/maps/search/?api=1&query={{ r.latitude }},{{ r.longitude }}" target="_blank" class="btn btn-sm" style="padding: 2px 8px; font-size: 0.7rem; background: rgba(59, 130, 246, 0.2); color: #3b82f6; margin-top: 5px; display: inline-flex;">
+                            <i class="fas fa-map-location-dot"></i> Map
+                        </a>
+                        {% endif %}
+                    </td>
                     <td>
                         <span class="status-badge 
                             {% if r.status == 'Pending' %}badge-pending

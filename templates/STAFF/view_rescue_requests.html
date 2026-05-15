@@ -12,6 +12,7 @@
                 <tr>
                     <th>Created</th>
                     <th>Contact Person</th>
+                    <th>Location</th>
                     <th>Priority</th>
                     <th>People</th>
                     <th>Message</th>
@@ -26,6 +27,15 @@
                     <td>
                         <strong>{{ r.contact_person }}</strong>
                         <div style="font-size: 0.8rem; color: var(--text-dim);">{{ r.contact_phone }}</div>
+                    </td>
+                    <td>
+                        {{ r.report.location_details }}
+                        {% if r.report.latitude and r.report.longitude %}
+                        <br>
+                        <a href="https://www.google.com/maps/search/?api=1&query={{ r.report.latitude }},{{ r.report.longitude }}" target="_blank" class="btn btn-sm" style="padding: 2px 8px; font-size: 0.7rem; background: rgba(59, 130, 246, 0.2); color: #3b82f6; margin-top: 5px; display: inline-flex;">
+                            <i class="fas fa-map-location-dot"></i> Map
+                        </a>
+                        {% endif %}
                     </td>
                     <td>
                         <span class="status-badge 
@@ -55,7 +65,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-dim);">No rescue requests in your district.</td>
+                    <td colspan="8" style="text-align: center; padding: 40px; color: var(--text-dim);">No rescue requests in your district.</td>
                 </tr>
                 {% endfor %}
             </tbody>

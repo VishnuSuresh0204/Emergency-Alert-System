@@ -27,7 +27,15 @@
                         <strong>{{ a.contact_person }}</strong>
                         <div style="font-size: 0.8rem; color: var(--text-dim);">{{ a.contact_phone }}</div>
                     </td>
-                    <td>{{ a.district.name }}</td>
+                    <td>
+                        {{ a.report.location_details }}
+                        {% if a.report.latitude and a.report.longitude %}
+                        <br>
+                        <a href="https://www.google.com/maps/search/?api=1&query={{ a.report.latitude }},{{ a.report.longitude }}" target="_blank" class="btn btn-sm" style="padding: 2px 8px; font-size: 0.7rem; background: rgba(59, 130, 246, 0.2); color: #3b82f6; margin-top: 5px; display: inline-flex;">
+                            <i class="fas fa-map-location-dot"></i> Map
+                        </a>
+                        {% endif %}
+                    </td>
                     <td>
                         <span class="status-badge {% if a.priority == 'High' %}badge-high{% else %}badge-medium{% endif %}">
                             {{ a.priority }}
