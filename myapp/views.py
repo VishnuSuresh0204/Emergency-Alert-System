@@ -678,6 +678,22 @@ def view_my_chats(request):
         
     return render(request, 'view_my_chats.html', {'chats': chat_partners})
 
+def staff_view_news(request):
+    staff = Staff.objects.get(loginid_id=request.session["lid"])
+    news = DistrictNews.objects.filter(district=staff.district).order_by('-created_at')
+    return render(request, 'STAFF/view_news.html', {'news': news})
+
+def staff_delete_news(request):
+    id = request.GET.get("id")
+    DistrictNews.objects.get(id=id).delete()
+    messages.success(request, "News Deleted")
+    return redirect("/staff_view_news")
+
+def volunteer_view_news(request):
+    volunteer = Volunteer.objects.get(loginid_id=request.session["lid"])
+    news = DistrictNews.objects.filter(district=volunteer.district).order_by('-created_at')
+    return render(request, 'VOLUNTEER/view_news.html', {'news': news})
+
 # --- Notification AJAX Views ---
 
 from django.http import JsonResponse
