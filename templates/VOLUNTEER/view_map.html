@@ -5,41 +5,76 @@
     <h1>Emergency Response Map</h1>
 </div>
 
-<div class="card" style="padding: 0; overflow: hidden; height: 600px; position: relative;">
-    <!-- Mock Map UI -->
-    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #1e293b; display: flex; align-items: center; justify-content: center;">
-        <div style="text-align: center;">
-            <i class="fas fa-map-marked-alt fa-4x" style="color: var(--primary); opacity: 0.3; margin-bottom: 20px;"></i>
-            <h3 style="color: var(--text-dim);">Live Interactive Map</h3>
-            <p style="color: var(--text-dim); max-width: 400px; margin: 10px auto;">In a real production environment, this would integrate with Google Maps or Leaflet API to show active incidents.</p>
-        </div>
-        
-        <!-- Mock Pins -->
-        {% for r in reports %}
-        <div style="position: absolute; top: {{ forloop.counter|add:20 }}%; left: {{ forloop.counter|add:30 }}%;" title="{{ r.emergency_type.name }}">
-            <div style="color: var(--emergency); text-align: center;">
-                <i class="fas fa-location-dot fa-2x"></i>
-                <div style="background: var(--glass); padding: 5px 10px; border-radius: 5px; font-size: 0.7rem; border: 1px solid rgba(255,255,255,0.1); margin-top: 5px;">
-                    {{ r.emergency_type.name }}
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
+<!-- Leaflet Map CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<style>
+    #map { height: 600px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); }
+    .leaflet-popup-content-wrapper { background: var(--sidebar-bg); color: var(--text-light); border: 1px solid rgba(255,255,255,0.1); }
+    .leaflet-popup-tip { background: var(--sidebar-bg); }
+</style>
+
+<div class="card" style="padding: 0; overflow: hidden; position: relative;">
+    <div id="map"></div>
     
     <!-- Legend -->
-    <div style="position: absolute; bottom: 20px; right: 20px; background: var(--glass); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px);">
+    <div style="position: absolute; bottom: 20px; right: 20px; background: var(--glass); padding: 15px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); z-index: 1000;">
         <h4 style="margin-bottom: 10px; font-size: 0.9rem;">Map Legend</h4>
         <div style="display: flex; flex-direction: column; gap: 8px;">
             <div style="display: flex; align-items: center; gap: 10px; font-size: 0.8rem;">
                 <i class="fas fa-location-dot" style="color: #ef4444;"></i> Active Incident
             </div>
             <div style="display: flex; align-items: center; gap: 10px; font-size: 0.8rem;">
-                <i class="fas fa-circle" style="color: #f59e0b; font-size: 0.5rem;"></i> Verified Area
+                <i class="fas fa-circle" style="color: #f59e0b; font-size: 0.5rem;"></i> Reported Area
             </div>
         </div>
     </div>
 </div>
+
+<!-- Leaflet Map JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var map = L.map('map').setView([10.5276, 76.2144], 10);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        var reports = [
+            {% for r in reports %}
+            {% if r.latitude and r.longitude %}
+            {
+                lat: {{ r.latitude }},
+                lon: {{ r.longitude }},
+                type: "{{ r.emergency_type.name }}",
+                location: "{{ r.location_details }}",
+                status: "{{ r.status }}",
+                desc: "{{ r.description|truncatechars:50 }}"
+            },
+            {% endif %}
+            {% endfor %}
+        ];
+
+        var markers = [];
+        reports.forEach(function(report) {
+            var marker = L.marker([report.lat, report.lon]).addTo(map);
+            marker.bindPopup(`
+                <div style="color: white;">
+                    <b style="color: #ef4444;">${report.type}</b><br>
+                    <small>${report.location}</small><br>
+                    <p style="margin: 5px 0; font-size: 0.8rem;">${report.desc}</p>
+                    <span class="status-badge badge-pending" style="font-size: 0.6rem;">${report.status}</span>
+                </div>
+            `);
+            markers.push(marker);
+        });
+
+        if (markers.length > 0) {
+            var group = new L.featureGroup(markers);
+            map.fitBounds(group.getBounds());
+        }
+    });
+</script>
 
 <div class="card" style="margin-top: 25px;">
     <h3>Active Incidents in Your District</h3>
