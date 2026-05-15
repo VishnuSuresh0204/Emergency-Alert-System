@@ -381,11 +381,13 @@ def citizen_report_emergency(request):
     if request.method == "POST":
         ty = request.POST.get('type')
         loc = request.POST.get('location')
+        lat = request.POST.get('latitude')
+        lon = request.POST.get('longitude')
         desc = request.POST.get('description')
         img = request.FILES.get('image')
 
         etype = EmergencyType.objects.get(id=ty)
-        EmergencyReport.objects.create(user=citizen, emergency_type=etype, district=citizen.district, location_details=loc, description=desc, image=img)
+        EmergencyReport.objects.create(user=citizen, emergency_type=etype, district=citizen.district, location_details=loc, latitude=lat, longitude=lon, description=desc, image=img)
         messages.success(request, "Emergency Reported. Authorities are notified.")
         return redirect("/citizen_view_reports")
     return render(request, 'CITIZEN/report_emergency.html', {'types': types})
