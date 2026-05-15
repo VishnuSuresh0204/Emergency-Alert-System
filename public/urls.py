@@ -31,6 +31,8 @@ urlpatterns = [
     path('admin_delete_emergency_type/', views.admin_delete_emergency_type),
     path('admin_view_all_reports/', views.admin_view_all_reports),
     path('admin_send_alert/', views.admin_send_alert),
+    path('admin_view_alerts/', views.admin_view_alerts),
+    path('admin_delete_alert/', views.admin_delete_alert),
     path('admin_view_feedback/', views.admin_view_feedback),
     path('admin_reply_feedback/', views.admin_reply_feedback),
     path('admin_view_citizens/', views.admin_view_citizens),

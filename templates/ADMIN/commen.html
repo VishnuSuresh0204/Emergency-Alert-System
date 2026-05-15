@@ -472,7 +472,7 @@
             </div>
 
             <div class="nav-section">
-                <div class="nav-section-title">Management</div>
+                <div class="nav-section-title">Core Management</div>
                 <ul class="nav-menu">
                     <li><a href="/admin_manage_districts/" class="nav-link {% if 'district' in request.path %}active{% endif %}"><i class="fas fa-map-location-dot"></i> Districts</a></li>
                     <li><a href="/admin_manage_staff/" class="nav-link {% if 'staff' in request.path %}active{% endif %}"><i class="fas fa-user-tie"></i> Staff</a></li>
@@ -482,11 +482,13 @@
             </div>
 
             <div class="nav-section">
-                <div class="nav-section-title">Emergency</div>
+                <div class="nav-section-title">Operations</div>
                 <ul class="nav-menu">
-                    <li><a href="/admin_manage_emergency_types/" class="nav-link {% if 'emergency_type' in request.path %}active{% endif %}"><i class="fas fa-triangle-exclamation"></i> Emergency Types</a></li>
-                    <li><a href="/admin_view_all_reports/" class="nav-link {% if 'reports' in request.path %}active{% endif %}"><i class="fas fa-file-lines"></i> All Reports</a></li>
-                    <li><a href="/admin_send_alert/" class="nav-link {% if 'send_alert' in request.path %}active{% endif %}"><i class="fas fa-tower-broadcast"></i> Send Alert</a></li>
+                    <li><a href="/admin_manage_emergency_types/" class="nav-link {% if 'emergency_type' in request.path %}active{% endif %}"><i class="fas fa-list-check"></i> Emergency Types</a></li>
+                    <li><a href="/admin_view_all_reports/" class="nav-link {% if 'all_reports' in request.path %}active{% endif %}"><i class="fas fa-clipboard-list"></i> Verify Reports</a></li>
+                    <li><a href="/admin_send_alert/" class="nav-link {% if 'send_alert' in request.path %}active{% endif %}"><i class="fas fa-bullhorn"></i> Send Severity Alert</a></li>
+                    <li><a href="/admin_view_alerts/" class="nav-link {% if 'view_alerts' in request.path %}active{% endif %}"><i class="fas fa-tower-broadcast"></i> Manage Severity Alerts</a></li>
+                    <li><a href="/admin_view_feedback/" class="nav-link {% if 'feedback' in request.path %}active{% endif %}"><i class="fas fa-comments"></i> User Feedbacks</a></li>
                 </ul>
             </div>
 

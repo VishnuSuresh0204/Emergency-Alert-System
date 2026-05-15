@@ -250,8 +250,18 @@ def admin_send_alert(request):
             Notification.objects.create(user=c.loginid, message=f"ALERT: {ti}")
             
         messages.success(request, "Alert Sent to District Citizens")
-        return redirect("/admin_home")
+        return redirect("/admin_view_alerts")
     return render(request, 'ADMIN/send_alert.html', {'districts': districts})
+
+def admin_view_alerts(request):
+    alerts = EmergencyAlert.objects.all().order_by('-created_at')
+    return render(request, 'ADMIN/view_alerts.html', {'alerts': alerts})
+
+def admin_delete_alert(request):
+    id = request.GET.get("id")
+    EmergencyAlert.objects.get(id=id).delete()
+    messages.success(request, "Alert Deleted")
+    return redirect("/admin_view_alerts")
 
 def admin_view_feedback(request):
     feedbacks = Feedback.objects.all().order_by('-created_at')
