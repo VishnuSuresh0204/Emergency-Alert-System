@@ -81,6 +81,8 @@ class EmergencyReport(models.Model):
     description = models.TextField()
     image = models.ImageField(upload_to="emergency_reports", null=True, blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Pending')
+    latitude = models.CharField(max_length=50, null=True, blank=True)
+    longitude = models.CharField(max_length=50, null=True, blank=True)
     reported_at = models.DateTimeField(auto_now_add=True)
     verified_by = models.ForeignKey(Staff, on_delete=models.SET_NULL, null=True, blank=True)
     remarks = models.TextField(default="")
