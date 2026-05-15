@@ -64,6 +64,8 @@ urlpatterns = [
     path('staff_update_situation/', views.staff_update_situation),
     path('staff_broadcast_alert/', views.staff_broadcast_alert),
     path('staff_profile/', views.staff_profile),
+    path('staff_view_volunteers/', views.staff_view_volunteers),
+    path('staff_view_citizens/', views.staff_view_citizens),
     path('get_notifications/', views.get_notifications),
 ]
 

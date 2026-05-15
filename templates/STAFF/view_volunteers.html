@@ -1,0 +1,45 @@
+{% extends 'STAFF/commen.html' %}
+
+{% block staff_body %}
+<div class="page-header">
+    <h1>District Volunteers</h1>
+    <p style="color: var(--text-dim);">Active volunteers available for emergency response in your district.</p>
+</div>
+
+<div class="card">
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Photo</th>
+                    <th>Name</th>
+                    <th>Specialization</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in volunteers %}
+                <tr>
+                    <td>
+                        {% if v.profile_pic %}
+                        <img src="{{ v.profile_pic.url }}" class="profile-pic" alt="{{ v.name }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                        {% else %}
+                        <div class="profile-pic" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;"><i class="fas fa-hand-holding-heart"></i></div>
+                        {% endif %}
+                    </td>
+                    <td><strong>{{ v.name }}</strong></td>
+                    <td><span class="status-badge badge-active" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2);">{{ v.specialization }}</span></td>
+                    <td>{{ v.phone }}</td>
+                    <td><span class="status-badge badge-verified">Active</span></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-dim);">No active volunteers found in your district.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

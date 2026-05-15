@@ -524,6 +524,16 @@ def staff_profile(request):
     staff = Staff.objects.get(loginid_id=request.session["lid"])
     return render(request, 'STAFF/profile.html', {'staff': staff})
 
+def staff_view_volunteers(request):
+    staff = Staff.objects.get(loginid_id=request.session["lid"])
+    volunteers = Volunteer.objects.filter(district=staff.district, status='Approved')
+    return render(request, 'STAFF/view_volunteers.html', {'volunteers': volunteers})
+
+def staff_view_citizens(request):
+    staff = Staff.objects.get(loginid_id=request.session["lid"])
+    citizens = Citizen.objects.filter(district=staff.district)
+    return render(request, 'STAFF/view_citizens.html', {'citizens': citizens})
+
 # --- Notification AJAX Views ---
 
 from django.http import JsonResponse
